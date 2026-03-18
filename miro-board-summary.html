@@ -405,6 +405,41 @@
   .progress-label { font-size: 0.7rem; color: #7a7a9a; margin-bottom: 0.3rem; display: flex; justify-content: space-between; }
   .progress-track { height: 6px; background: #2a2a4a; border-radius: 3px; overflow: hidden; }
   .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #4ade80, #a78bfa); transition: width 0.4s ease; }
+
+  /* ===== PERSONA CARDS ===== */
+  .persona-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.2rem; }
+  .persona-card { background: #16162e; border-radius: 10px; padding: 1.5rem; border: 1px solid #3a3a5a; }
+  .persona-header { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1rem; }
+  .persona-avatar { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 800; color: #fff; flex-shrink: 0; letter-spacing: -0.5px; }
+  .persona-name { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 0.15rem; }
+  .persona-role { font-size: 0.72rem; color: #7a7a9a; margin-bottom: 0.4rem; }
+  .persona-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .persona-tag { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 20px; border: 1px solid; }
+  .persona-quote { font-style: italic; font-size: 0.85rem; color: #c0b0d8; line-height: 1.6; padding: 0.8rem 1rem; background: rgba(255,255,255,0.03); border-left: 3px solid #a78bfa; border-radius: 0 6px 6px 0; margin-bottom: 1rem; }
+  .persona-body { font-size: 0.8rem; color: #9a90b0; line-height: 1.55; }
+  .persona-section { margin-bottom: 0.8rem; }
+  .persona-section-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1.5px; color: #6a6a8a; font-weight: 700; margin-bottom: 0.3rem; }
+  .persona-section ul { padding-left: 1.1rem; }
+  .persona-section li { margin-bottom: 0.25rem; }
+  .persona-opportunity { font-size: 0.78rem; color: #b8e6d0; background: rgba(74,222,128,0.08); border-radius: 6px; padding: 0.7rem 0.9rem; margin-top: 1rem; line-height: 1.5; border: 1px solid #4ade8020; }
+
+  /* ===== JOURNEY MAP ===== */
+  .journey-scroll { overflow-x: auto; padding-bottom: 0.5rem; margin-top: 0.5rem; }
+  .journey-map { display: grid; grid-template-rows: auto; min-width: 980px; gap: 0.4rem; }
+  .journey-row { display: grid; grid-template-columns: 90px repeat(6, 1fr); gap: 0.4rem; }
+  .journey-row-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1.5px; color: #6a6a8a; font-weight: 700; display: flex; align-items: center; padding-right: 0.4rem; line-height: 1.4; }
+  .journey-stage { border-radius: 8px; padding: 0.8rem 0.6rem; border: 1px solid rgba(255,255,255,0.06); text-align: center; }
+  .stage-num { font-size: 0.62rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .stage-name { font-size: 0.8rem; font-weight: 600; color: #fff; line-height: 1.3; }
+  .journey-cell { background: #16162e; border-radius: 6px; padding: 0.7rem 0.75rem; font-size: 0.75rem; color: #9a90b0; line-height: 1.5; border: 1px solid #22223a; vertical-align: top; }
+  .journey-emotion { text-align: center; }
+  .emotion-emoji { font-size: 1.3rem; margin-bottom: 0.2rem; }
+  .emotion-label { font-size: 0.66rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .emotion-bar-wrap { height: 4px; background: #2a2a4a; border-radius: 2px; overflow: hidden; }
+  .emotion-bar { height: 100%; border-radius: 2px; }
+  .touchpoint-tag { display: inline-block; background: rgba(255,255,255,0.06); border-radius: 3px; padding: 0.15rem 0.4rem; font-size: 0.66rem; color: #b0b0c8; margin: 0.15rem 0.1rem 0 0; }
+  .journey-opp { background: rgba(74,222,128,0.05); border-color: #4ade8022; }
+  .opp-tag { font-size: 0.72rem; color: #86efac; margin-bottom: 0.35rem; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -413,7 +448,7 @@
 <div class="top-bar">
   <div>
     <h1>T2 — ECUAD Library Service Design</h1>
-    <div class="meta">Board Summary · Updated March 17, 2026 · Roles Confirmed</div>
+    <div class="meta">Board Summary · Updated March 17, 2026 · Retro + Personas + Journey Map Added</div>
   </div>
 </div>
 
@@ -431,7 +466,7 @@
 </div>
 
 <!-- ===== SETUP BANNER ===== -->
-<div class="setup-banner" id="setupBanner">
+<div class="setup-banner" id="setupBanner" style="display:none;">
   <h3>Enable Real-Time Sync (5 min setup)</h3>
   Right now checkboxes save to your browser only. To sync across all devices so everyone sees the same progress:
   <ol>
@@ -455,6 +490,37 @@
 <!-- ============================================ -->
 <div class="tab-content" id="tab-updates">
   <div class="updates-page">
+
+    <!-- UPDATE 003 -->
+    <div class="update-card">
+      <div class="update-header">
+        <div class="update-from">
+          <div class="update-avatar" style="background:#fff3b0;">M</div>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:#fff;">Max <span style="font-size:0.7rem; color:#4ade80;">SR</span></div>
+            <div class="update-meta">March 17, 2026 · Tonight</div>
+          </div>
+        </div>
+        <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; background:#60a5fa33; color:#60a5fa; padding:0.2rem 0.6rem; border-radius:10px; font-weight:700;">Presentation Prep</div>
+      </div>
+      <div class="update-title">Research Retrospective + Personas + As-Is Journey Map Added</div>
+      <div class="update-body">
+        <p>Big build session — three new presentation sections are now live on the dashboard, matching the Mar 24 slide structure from class today:</p>
+        <ul>
+          <li><strong>Research Retrospective</strong> (Slides 2–5) — Six research themes synthesized from our collective AEIOU work, affinity clusters from the Mar 15 session, and key quotes from the Mar 17 library staff meeting</li>
+          <li><strong>Personas</strong> (Slide 6) — Three personas: <span class="highlight">Mia Reyes</span> (Foundation Year / International), <span class="highlight">Jordan Park</span> (3rd Year / Regular User), and <span class="highlight">Michelle Ng</span> (Resources Librarian / Stakeholder)</li>
+          <li><strong>As-Is Journey Map</strong> (Slide 7) — Full current-state map for Mia's "find and borrow a book" scenario with stages, actions, thoughts, emotions, touchpoints, and opportunity points</li>
+        </ul>
+        <p>Service Direction (Slide 8) and Precedents (Slide 9) are already in the dashboard. Remaining gaps: Slide 1 (title — Alicia), Slides 2–5 finalized after Friday's library visit, Slide 10 (sketches — Lyon + Jennie). Library visit is in 3 days.</p>
+      </div>
+      <div class="read-receipts">
+        <label>Read by:</label>
+        <button class="read-btn" data-update="update-003" data-reader="Max" onclick="markRead('update-003','Max')"><span class="read-check">&#9744;</span> Max</button>
+        <button class="read-btn" data-update="update-003" data-reader="Lyon" onclick="markRead('update-003','Lyon')"><span class="read-check">&#9744;</span> Lyon</button>
+        <button class="read-btn" data-update="update-003" data-reader="Jennie" onclick="markRead('update-003','Jennie')"><span class="read-check">&#9744;</span> Jennie</button>
+        <button class="read-btn" data-update="update-003" data-reader="Alicia" onclick="markRead('update-003','Alicia')"><span class="read-check">&#9744;</span> Alicia</button>
+      </div>
+    </div>
 
     <!-- UPDATE 002 -->
     <div class="update-card">
@@ -548,6 +614,7 @@
     <div class="status-item"><div class="status-dot dot-done"></div> Safari complete</div>
     <div class="status-item"><div class="status-dot dot-done"></div> Direction locked</div>
     <div class="status-item"><div class="status-dot dot-done"></div> Roles confirmed</div>
+    <div class="status-item"><div class="status-dot dot-done"></div> Personas + Journey Map built</div>
     <div class="status-item"><div class="status-dot dot-next"></div> Library visit Mar 20</div>
     <div class="status-item"><div class="status-dot dot-next"></div> Presentation Mar 24</div>
     <div class="status-item"><div class="status-dot dot-future"></div> Final Apr 10</div>
@@ -706,6 +773,318 @@
     </div>
   </div>
 
+  <!-- ===== RESEARCH RETROSPECTIVE ===== -->
+  <div class="section" style="border-color: #60a5fa;">
+    <div class="section-head"><div><div class="section-label">Presentation — Slides 2–5</div><div class="section-title">Research Retrospective</div></div><div class="section-status status-active">In Progress</div></div>
+    <div class="section-summary">Synthesis of T2's AEIOU observations, team session (Mar 15), and library staff meeting (Mar 17). Six key themes emerged across all four team members' research. These themes drive our kiosk direction and form slides 2–5 of the Mar 24 presentation.</div>
+
+    <div class="finding-grid" style="margin-bottom:1.2rem;">
+      <div class="finding blue">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem; flex-wrap:wrap; gap:0.3rem;">
+          <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; color:#60a5fa; font-weight:700;">Theme 1 — Transactional Front</div>
+          <div style="font-size:0.6rem; color:#6a6a8a;">All four team members</div>
+        </div>
+        <h4>The Entrance Reads as a Copy Shop</h4>
+        <p>Every team member independently observed that the main floor is dominated by printing, card loading, and printer troubleshooting. The entrance signals "do your task and leave" — not "explore and stay." Students arrive with a job and leave the moment it's done.</p>
+      </div>
+      <div class="finding purple">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem; flex-wrap:wrap; gap:0.3rem;">
+          <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; color:#a78bfa; font-weight:700;">Theme 2 — Hidden Library</div>
+          <div style="font-size:0.6rem; color:#6a6a8a;">Led by <span style="color:#fff3b0;">Max</span> · <span style="color:#b8d4f0;">Lyon</span></div>
+        </div>
+        <h4>The Best Services Are Invisible</h4>
+        <p>Games lending, resource swap, special collections, bookable rooms, the hammock, archival film — these exist but are effectively invisible. Students stumble onto them by accident or never discover them at all. There is no communication strategy.</p>
+      </div>
+      <div class="finding yellow">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem; flex-wrap:wrap; gap:0.3rem;">
+          <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; color:#facc15; font-weight:700;">Theme 3 — Broken Wayfinding</div>
+          <div style="font-size:0.6rem; color:#6a6a8a;">Led by <span style="color:#b8d4f0;">Lyon</span> · <span style="color:#fff3b0;">Max</span></div>
+        </div>
+        <h4>Basic Navigation Is a Puzzle</h4>
+        <p>Bathrooms are hidden down non-obvious hallways. The elevator's purpose is ambiguous. The book return sign is blocked by a display case. No floor map exists. New students — especially international or foundation-year — face constant small moments of hesitation and confusion.</p>
+      </div>
+      <div class="finding red">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem; flex-wrap:wrap; gap:0.3rem;">
+          <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; color:#f87171; font-weight:700;">Theme 4 — Physical Access</div>
+          <div style="font-size:0.6rem; color:#6a6a8a;">Led by <span style="color:#f0c4d4;">Jennie</span></div>
+        </div>
+        <h4>The Building Works Against Itself</h4>
+        <p>No first-floor entrance despite the security alarm being non-functional. Dead plants wasting potential desk space. An underused, unstable-feeling second-floor wing. Physical constraints reinforce the sense that the library is not fully accessible or welcoming to everyone.</p>
+      </div>
+      <div class="finding green">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem; flex-wrap:wrap; gap:0.3rem;">
+          <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; color:#4ade80; font-weight:700;">Theme 5 — Staff Potential Untapped</div>
+          <div style="font-size:0.6rem; color:#6a6a8a;">Led by <span style="color:#b8d4f0;">Lyon</span> · <span style="color:#fff3b0;">Max</span></div>
+        </div>
+        <h4>Great People, Wrong Position</h4>
+        <p>Staff are universally described as warm, approachable, and genuinely helpful — but desk-anchored. All interactions are operational. Their expertise and potential for research mentorship is buried under a wall of printing requests. A kiosk could free them for what they're actually great at.</p>
+      </div>
+      <div class="finding orange">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem; flex-wrap:wrap; gap:0.3rem;">
+          <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; color:#fb923c; font-weight:700;">Theme 6 — The Real Library Is Downstairs</div>
+          <div style="font-size:0.6rem; color:#6a6a8a;">Led by <span style="color:#b8e6d0;">Alicia</span> · <span style="color:#fff3b0;">Max</span></div>
+        </div>
+        <h4>The Library's Best Self Is Its Best-Kept Secret</h4>
+        <p>Natural light, plants, beanbags, a hammock, compact archival shelving — the lower level has a completely different energy. Students come here to stay. It's the most intentionally designed and human part of the space, but it's essentially invisible from the entrance.</p>
+      </div>
+    </div>
+
+    <!-- Affinity Clusters -->
+    <div style="background:#16162e; border-radius:8px; padding:1.2rem; margin-bottom:0.8rem; border-left: 3px solid #60a5fa;">
+      <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; color:#60a5fa; font-weight:700; margin-bottom:0.8rem;">Affinity Clusters — Team Session Mar 15</div>
+      <div style="display:flex; flex-wrap:wrap; gap:0.6rem;">
+        <div style="background:#1a2a3a; border-radius:6px; padding:0.6rem 1rem; font-size:0.76rem; color:#b0b0c8;"><div style="color:#60a5fa; font-weight:700; margin-bottom:0.25rem;">🖨️ Print / Transaction (9 notes)</div>Card loading, printer help, desk queries, transactional vibe</div>
+        <div style="background:#2a1a3a; border-radius:6px; padding:0.6rem 1rem; font-size:0.76rem; color:#b0b0c8;"><div style="color:#a78bfa; font-weight:700; margin-bottom:0.25rem;">🗺️ Wayfinding (7 notes)</div>Bathrooms, elevator, floor map, return sign blocked</div>
+        <div style="background:#1a3a2a; border-radius:6px; padding:0.6rem 1rem; font-size:0.76rem; color:#b0b0c8;"><div style="color:#4ade80; font-weight:700; margin-bottom:0.25rem;">🌿 Lower Level (6 notes)</div>Natural light, hammock, beanbags, archival shelving</div>
+        <div style="background:#3a2a1a; border-radius:6px; padding:0.6rem 1rem; font-size:0.76rem; color:#b0b0c8;"><div style="color:#fb923c; font-weight:700; margin-bottom:0.25rem;">🔒 Hidden Services (8 notes)</div>Games, resource swap, special collections, bookable rooms</div>
+        <div style="background:#3a3a1a; border-radius:6px; padding:0.6rem 1rem; font-size:0.76rem; color:#b0b0c8;"><div style="color:#facc15; font-weight:700; margin-bottom:0.25rem;">🚪 Physical Access (5 notes)</div>No first-floor entrance, dead plants, unstable wing</div>
+        <div style="background:#2a3a1a; border-radius:6px; padding:0.6rem 1rem; font-size:0.76rem; color:#b0b0c8;"><div style="color:#86efac; font-weight:700; margin-bottom:0.25rem;">🧑‍💼 Staff + Desk (4 notes)</div>Anchored to front desk, warm but underutilized</div>
+      </div>
+    </div>
+
+    <!-- Staff Meeting Key Insights -->
+    <div style="background:#1a2a1a; border-radius:8px; padding:1.2rem; border: 1px solid #4ade8033;">
+      <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; color:#4ade80; font-weight:700; margin-bottom:0.6rem;">📋 Library Staff Meeting — Key Quotes (March 17)</div>
+      <div style="font-size:0.82rem; line-height:1.7; color:#9ad0b8;">
+        Met with <strong style="color:#e0f0e0;">Michelle Ng</strong> (Resources/Discovery Librarian), <strong style="color:#e0f0e0;">Hillary Welde</strong> (Technical Services Librarian), and <strong style="color:#e0f0e0;">Emma Somers</strong> (Operations Coordinator):
+        <ul style="margin-top:0.5rem; padding-left:1.2rem;">
+          <li>Staff <strong>actively want</strong> students to discover more services — they just don't have a channel that works</li>
+          <li>The Evergreen ILS public catalogue has a <strong>broken login</strong> — confirms our "catalogue UX is broken" finding from research</li>
+          <li>Full <strong>library collection spreadsheet</strong> incoming — books, movies, audio, magazines, archives — real data for our prototype</li>
+          <li>Hillary and Michelle will attend our <strong>final presentation April 10</strong> — real stakeholder audience</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PERSONAS ===== -->
+  <div class="section" style="border-color: #f472b6;">
+    <div class="section-head"><div><div class="section-label">Presentation — Slide 6</div><div class="section-title">Personas</div></div><div class="section-status status-active">Draft</div></div>
+    <div class="section-summary">Two user personas and one stakeholder persona developed from T2's collective research observations. Mia represents the newcomer who doesn't know what the library offers. Jordan represents the regular user who lacks community. Michelle represents staff who want to do more than print requests.</div>
+
+    <div class="persona-grid">
+
+      <!-- Persona 1: Mia Reyes — owned by Lyon -->
+      <div class="persona-card">
+        <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; color:#b8d4f0; font-weight:700; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem;"><span style="width:16px; height:16px; background:#b8d4f0; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#1a1a2e; font-size:0.6rem;">L</span> Owned by Lyon — XD</div>
+        <div class="persona-header">
+          <div class="persona-avatar" style="background: linear-gradient(135deg, #f472b6, #a78bfa);">MR</div>
+          <div>
+            <div class="persona-name">Mia Reyes</div>
+            <div class="persona-role">Foundation Year · International Student · Age 19</div>
+            <div class="persona-tags">
+              <span class="persona-tag" style="color:#f472b6; border-color:#f472b644;">First Year</span>
+              <span class="persona-tag" style="color:#f472b6; border-color:#f472b644;">Hesitant</span>
+              <span class="persona-tag" style="color:#f472b6; border-color:#f472b644;">Overwhelmed</span>
+            </div>
+          </div>
+        </div>
+        <div class="persona-quote">"I walked past the research desk three times before I realized I was even allowed to ask them anything. I didn't want to seem like I didn't know what I was doing."</div>
+        <div class="persona-body">
+          <div class="persona-section">
+            <div class="persona-section-label">Goals</div>
+            <ul>
+              <li>Find materials for her first major project without feeling embarrassed</li>
+              <li>Understand what the library offers beyond printing</li>
+              <li>Feel like she genuinely belongs in the space</li>
+            </ul>
+          </div>
+          <div class="persona-section">
+            <div class="persona-section-label">Pain Points</div>
+            <ul>
+              <li>Can't find the bathroom — too embarrassed to ask at the desk</li>
+              <li>Doesn't know how to borrow a book (return sign is hidden behind a display)</li>
+              <li>Library website catalogue is confusing and not intuitive</li>
+              <li>Research desk feels intimidating — worried about asking "dumb questions"</li>
+            </ul>
+          </div>
+          <div class="persona-section">
+            <div class="persona-section-label">Behaviour</div>
+            <p>Comes mainly to print and use iMacs. Stays on the main floor. Has never gone downstairs. Doesn't know about game lending, resource swap, special collections, or bookable rooms.</p>
+          </div>
+        </div>
+        <div class="persona-opportunity">💡 A low-pressure kiosk she can approach without fear of judgment. Clear wayfinding. Friendly prompts that surface hidden services and build her confidence before she leaves.</div>
+      </div>
+
+      <!-- Persona 2: Jordan Park — owned by Alicia -->
+      <div class="persona-card">
+        <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; color:#b8e6d0; font-weight:700; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem;"><span style="width:16px; height:16px; background:#b8e6d0; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#1a1a2e; font-size:0.6rem;">A</span> Owned by Alicia — VC</div>
+        <div class="persona-header">
+          <div class="persona-avatar" style="background: linear-gradient(135deg, #60a5fa, #4ade80);">JP</div>
+          <div>
+            <div class="persona-name">Jordan Park</div>
+            <div class="persona-role">3rd Year Illustration · Regular User · Age 22</div>
+            <div class="persona-tags">
+              <span class="persona-tag" style="color:#60a5fa; border-color:#60a5fa44;">Comfortable</span>
+              <span class="persona-tag" style="color:#60a5fa; border-color:#60a5fa44;">Habitual</span>
+              <span class="persona-tag" style="color:#60a5fa; border-color:#60a5fa44;">Disconnected</span>
+            </div>
+          </div>
+        </div>
+        <div class="persona-quote">"I've been coming here for three years. I have my spot. But I found out about the library game nights last month — from Instagram, not the library. That feels wrong."</div>
+        <div class="persona-body">
+          <div class="persona-section">
+            <div class="persona-section-label">Goals</div>
+            <ul>
+              <li>Wants community, not just a workspace — a sense of being part of something</li>
+              <li>Wants to discover what's happening on campus without hunting for it</li>
+              <li>Interested in events but has never posted one — doesn't know if that's possible</li>
+            </ul>
+          </div>
+          <div class="persona-section">
+            <div class="persona-section-label">Pain Points</div>
+            <ul>
+              <li>Misses events because there's no centralized notification system</li>
+              <li>Community is fragmented across Instagram, Moodle, and physical flyers</li>
+              <li>Library community board (if it exists) is invisible to them after 3 years</li>
+            </ul>
+          </div>
+          <div class="persona-section">
+            <div class="persona-section-label">Behaviour</div>
+            <p>Comes 3–4× per week. Claims the same lower-level spot every time. Uses scanning and printing for finals. Has explored the archival stacks. Loves the hammock but rarely uses it. Operates solo.</p>
+          </div>
+        </div>
+        <div class="persona-opportunity">💡 Community board with event posting and interest-based notifications. "3 people from Illustration are going to Board Game Night." Make the invisible community visible to the regulars who already love the space.</div>
+      </div>
+
+      <!-- Persona 3: Michelle Ng — owned by Max (stakeholder research) -->
+      <div class="persona-card" style="border-color: #4ade8044;">
+        <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; color:#fff3b0; font-weight:700; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem;"><span style="width:16px; height:16px; background:#fff3b0; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#1a1a2e; font-size:0.6rem;">M</span> Owned by Max — SR · Stakeholder Persona</div>
+        <div class="persona-header">
+          <div class="persona-avatar" style="background: linear-gradient(135deg, #4ade80, #facc15);">MN</div>
+          <div>
+            <div class="persona-name">Michelle Ng</div>
+            <div class="persona-role">Resources &amp; Discovery Librarian · Staff Stakeholder</div>
+            <div class="persona-tags">
+              <span class="persona-tag" style="color:#4ade80; border-color:#4ade8044;">Stakeholder</span>
+              <span class="persona-tag" style="color:#4ade80; border-color:#4ade8044;">Desk-Bound</span>
+              <span class="persona-tag" style="color:#4ade80; border-color:#4ade8044;">Enthusiastic</span>
+            </div>
+          </div>
+        </div>
+        <div class="persona-quote">"We have so much here that students don't know about. I wish I could follow students around and show them what's possible — but I'm always at the front desk."</div>
+        <div class="persona-body">
+          <div class="persona-section">
+            <div class="persona-section-label">Goals</div>
+            <ul>
+              <li>Wants students to discover services without needing to ask</li>
+              <li>Would love to have more substantive research conversations</li>
+              <li>Excited about anything that helps students feel confident in the space</li>
+            </ul>
+          </div>
+          <div class="persona-section">
+            <div class="persona-section-label">Pain Points</div>
+            <ul>
+              <li>80%+ of desk interactions are printing and card-loading — not what she trained for</li>
+              <li>No proactive channel to communicate services to students</li>
+              <li>The Evergreen ILS public catalogue is broken — students can't self-serve even if they want to</li>
+            </ul>
+          </div>
+          <div class="persona-section">
+            <div class="persona-section-label">Relationship to Project</div>
+            <p>Met with Max on Mar 17. Confirmed our kiosk direction. Providing the full library collection spreadsheet. Will attend the final presentation on Apr 10 alongside Hillary Welde.</p>
+          </div>
+        </div>
+        <div class="persona-opportunity">💡 A kiosk that handles transactional requests frees Michelle for research conversations, discovery sessions, and genuine student connection — the work she actually loves.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== AS-IS JOURNEY MAP ===== -->
+  <div class="section" style="border-color: #fb923c;">
+    <div class="section-head"><div><div class="section-label">Presentation — Slide 7</div><div class="section-title">As-Is Journey Map</div></div><div class="section-status status-active">Draft</div></div>
+    <div class="section-summary">Current-state journey map for Mia Reyes attempting to find and borrow a book for her first major project. Mapped with stages, actions, thoughts, emotional arc, touchpoints, and opportunity points. Based on T2's combined AEIOU observations and staff meeting insights.</div>
+
+    <!-- Journey context -->
+    <div style="display:flex; gap:0.8rem; flex-wrap:wrap; margin-bottom:1.2rem;">
+      <div style="background:#16162e; border-radius:6px; padding:0.5rem 1rem; font-size:0.76rem;"><span style="color:#fb923c; font-weight:700;">Actor:</span> <span style="color:#e0e0f0;">Mia Reyes — Foundation Year, International Student</span></div>
+      <div style="background:#16162e; border-radius:6px; padding:0.5rem 1rem; font-size:0.76rem;"><span style="color:#fb923c; font-weight:700;">Scenario:</span> <span style="color:#e0e0f0;">Finding and borrowing a book for a class project</span></div>
+      <div style="background:#16162e; border-radius:6px; padding:0.5rem 1rem; font-size:0.76rem;"><span style="color:#fb923c; font-weight:700;">Setting:</span> <span style="color:#e0e0f0;">Weekday afternoon — first time attempting to borrow</span></div>
+    </div>
+
+    <!-- Journey Map -->
+    <div class="journey-scroll">
+      <div class="journey-map">
+
+        <!-- STAGES -->
+        <div class="journey-row">
+          <div class="journey-row-label">Stage</div>
+          <div class="journey-stage" style="background:#1a2236; border-color:#60a5fa33;"><div class="stage-num" style="color:#60a5fa;">01</div><div class="stage-name">Entering</div></div>
+          <div class="journey-stage" style="background:#1a2236; border-color:#60a5fa33;"><div class="stage-num" style="color:#60a5fa;">02</div><div class="stage-name">Orienting</div></div>
+          <div class="journey-stage" style="background:#221832; border-color:#a78bfa33;"><div class="stage-num" style="color:#a78bfa;">03</div><div class="stage-name">Searching the Catalogue</div></div>
+          <div class="journey-stage" style="background:#2a1e14; border-color:#fb923c33;"><div class="stage-num" style="color:#fb923c;">04</div><div class="stage-name">Finding in the Stacks</div></div>
+          <div class="journey-stage" style="background:#2a1414; border-color:#f8717133;"><div class="stage-num" style="color:#f87171;">05</div><div class="stage-name">Borrowing</div></div>
+          <div class="journey-stage" style="background:#142a1e; border-color:#4ade8033;"><div class="stage-num" style="color:#4ade80;">06</div><div class="stage-name">Leaving</div></div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="journey-row">
+          <div class="journey-row-label">Actions</div>
+          <div class="journey-cell">Walks in through main entrance. Sees iMac stations and printing queue. Looks around for a map or directory. Doesn't find one.</div>
+          <div class="journey-cell">Wanders toward the stacks. Spots the research desk. Hesitates. Pulls out phone and Googles "ECUAD library catalogue."</div>
+          <div class="journey-cell">Finds the library website. Online catalogue is hard to navigate. Locates call number — "PS558.B3 — Lower Level, Stack B." Writes it on her hand.</div>
+          <div class="journey-cell">Takes stairs to lower level. Gets disoriented in the compact shelving. Can't find "Stack B." Wanders for several minutes.</div>
+          <div class="journey-cell">Finds the book. Looks for a checkout sign or machine. Sees a small "Returns" sign half-hidden behind a display case. Confused — is this also for checkout? Asks the front desk.</div>
+          <div class="journey-cell">Staff helps her check out the book. She leaves. Never discovered the hammock, the games, the events board, or the resource swap.</div>
+        </div>
+
+        <!-- THOUGHTS -->
+        <div class="journey-row">
+          <div class="journey-row-label">Thoughts</div>
+          <div class="journey-cell" style="font-style:italic; color:#c0b0d8;">"Where do I even start? Is everything here just for printing?"</div>
+          <div class="journey-cell" style="font-style:italic; color:#c0b0d8;">"That desk looks important — but what do I even ask? 'I want a book?' That sounds dumb."</div>
+          <div class="journey-cell" style="font-style:italic; color:#c0b0d8;">"This website is really confusing. What's a call number? Is it the thing on the spine?"</div>
+          <div class="journey-cell" style="font-style:italic; color:#c0b0d8;">"Why isn't this labelled? Are the stacks in order? Did I go to the right floor?"</div>
+          <div class="journey-cell" style="font-style:italic; color:#c0b0d8;">"Is this checkout or just returns? I don't want to take something I'm not supposed to."</div>
+          <div class="journey-cell" style="font-style:italic; color:#c0b0d8;">"That was harder than I thought. I didn't know the library had all that stuff."</div>
+        </div>
+
+        <!-- EMOTIONS -->
+        <div class="journey-row">
+          <div class="journey-row-label">Emotions</div>
+          <div class="journey-cell journey-emotion"><div class="emotion-emoji">😐</div><div class="emotion-label" style="color:#60a5fa;">Neutral</div><div class="emotion-bar-wrap"><div class="emotion-bar" style="width:55%; background:#60a5fa;"></div></div></div>
+          <div class="journey-cell journey-emotion"><div class="emotion-emoji">😟</div><div class="emotion-label" style="color:#a78bfa;">Anxious</div><div class="emotion-bar-wrap"><div class="emotion-bar" style="width:30%; background:#a78bfa;"></div></div></div>
+          <div class="journey-cell journey-emotion"><div class="emotion-emoji">😕</div><div class="emotion-label" style="color:#facc15;">Confused</div><div class="emotion-bar-wrap"><div class="emotion-bar" style="width:35%; background:#facc15;"></div></div></div>
+          <div class="journey-cell journey-emotion"><div class="emotion-emoji">😤</div><div class="emotion-label" style="color:#fb923c;">Frustrated</div><div class="emotion-bar-wrap"><div class="emotion-bar" style="width:25%; background:#fb923c;"></div></div></div>
+          <div class="journey-cell journey-emotion"><div class="emotion-emoji">😰</div><div class="emotion-label" style="color:#f87171;">Embarrassed</div><div class="emotion-bar-wrap"><div class="emotion-bar" style="width:20%; background:#f87171;"></div></div></div>
+          <div class="journey-cell journey-emotion"><div class="emotion-emoji">😌</div><div class="emotion-label" style="color:#4ade80;">Relieved</div><div class="emotion-bar-wrap"><div class="emotion-bar" style="width:65%; background:#4ade80;"></div></div></div>
+        </div>
+
+        <!-- TOUCHPOINTS -->
+        <div class="journey-row">
+          <div class="journey-row-label">Touch&shy;points</div>
+          <div class="journey-cell"><span class="touchpoint-tag">Main entrance</span><span class="touchpoint-tag">iMac stations</span><span class="touchpoint-tag">Visual scan of space</span></div>
+          <div class="journey-cell"><span class="touchpoint-tag">Research desk (avoided)</span><span class="touchpoint-tag">Phone / Google</span><span class="touchpoint-tag">ECUAD library website</span></div>
+          <div class="journey-cell"><span class="touchpoint-tag">Online catalogue (Evergreen)</span><span class="touchpoint-tag">Call number system</span><span class="touchpoint-tag">Personal notes</span></div>
+          <div class="journey-cell"><span class="touchpoint-tag">Stairwell</span><span class="touchpoint-tag">Compact shelving</span><span class="touchpoint-tag">Stack labels (unclear)</span></div>
+          <div class="journey-cell"><span class="touchpoint-tag">Hidden return sign</span><span class="touchpoint-tag">Front desk (finally)</span><span class="touchpoint-tag">Student ID card</span></div>
+          <div class="journey-cell"><span class="touchpoint-tag">Staff interaction</span><span class="touchpoint-tag">Checkout system</span><span class="touchpoint-tag">Exit</span></div>
+        </div>
+
+        <!-- OPPORTUNITIES -->
+        <div class="journey-row">
+          <div class="journey-row-label" style="color:#4ade80;">Oppor&shy;tunities</div>
+          <div class="journey-cell journey-opp"><div class="opp-tag">🗺️ Interactive floor map at entrance</div><div class="opp-tag">🖥️ Kiosk as first point of contact</div></div>
+          <div class="journey-cell journey-opp"><div class="opp-tag">📍 Wayfinding to bathrooms, elevator, stacks</div><div class="opp-tag">💬 Low-pressure kiosk replaces intimidating desk</div></div>
+          <div class="journey-cell journey-opp"><div class="opp-tag">🔍 Familiar catalogue UX (VPL/Indigo pattern)</div><div class="opp-tag">📱 "Find in Library" — location + floor map</div></div>
+          <div class="journey-cell journey-opp"><div class="opp-tag">🗂️ Improved stack navigation + labels</div><div class="opp-tag">🏷️ Surface hidden gems on the way (games, archives)</div></div>
+          <div class="journey-cell journey-opp"><div class="opp-tag">✅ Clear, unambiguous checkout flow</div><div class="opp-tag">🪧 Visible borrow + return signage</div></div>
+          <div class="journey-cell journey-opp"><div class="opp-tag">📅 "Before you go" event discovery prompt</div><div class="opp-tag">🌿 Surface the lower-level experience</div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Emotional arc summary -->
+    <div style="background:#16162e; border-radius:8px; padding:1rem 1.2rem; margin-top:1rem; border-left: 3px solid #fb923c;">
+      <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; color:#fb923c; font-weight:700; margin-bottom:0.5rem;">Emotional Arc — Key Insight</div>
+      <div style="font-size:0.82rem; color:#b0b0c8; line-height:1.65;">
+        Mia's journey starts neutral and immediately drops into anxiety and confusion. The lowest points are stages 3–5: the broken catalogue, disorienting stacks, and ambiguous checkout. The arc only recovers when a human (staff) finally intervenes — but this came after unnecessary friction that could have been avoided entirely. <strong style="color:#fb923c;">Our kiosk opportunity is to flatten that dip</strong> — removing embarrassment and confusion before they compound, so Mia leaves knowing the library, not just surviving it.
+      </div>
+    </div>
+  </div>
+
   <!-- ===== SECTION 4: SERVICE DIRECTION ===== -->
   <div class="section" style="border-color: #4ade80;">
     <div class="section-head"><div><div class="section-label">Section 4</div><div class="section-title">Service Direction — Interactive Library Kiosk</div></div><div class="section-status status-active">Active</div></div>
@@ -720,8 +1099,11 @@
       <div class="sticky team"><div class="author">Team</div><div class="title">Design Principle — Voice Before Efficiency</div>We're not optimizing for speed. We're building confidence. A student who feels welcome will come back. Designed for multicultural students, foundation-year, introverts, anyone who feels unsure.</div>
       <div class="sticky team"><div class="author">Team</div><div class="title">What This Is NOT</div>Not a self-checkout machine. Not a replacement for staff. Not something that lets students hide. It's a tool that builds confidence, surfaces community, and opens doors to connection.</div>
       <div class="sticky jennie"><div class="author">Jennie</div><div class="title">Accessibility Is Physical Too</div>Jennie flagged that the library's physical layout creates barriers — no first-floor entrance, dead-end wings, wasted space. The kiosk should also address physical navigation, not just digital wayfinding. If students can't easily get into the building, a screen inside won't help.</div>
+      <div class="sticky jennie"><div class="author">Jennie</div><div class="title">Kiosk Placement &amp; Physical Form</div>Location matters as much as the screen. The kiosk should live at the entry point — visible immediately on arrival, before students decide to explore or leave. Enclosure design needs to feel permanent and welcoming, not temporary. Stand height and screen angle must be accessible for wheelchair users and shorter students.</div>
       <div class="sticky lyon"><div class="author">Lyon</div><div class="title">Lyon's Direction — Signage First</div>Lyon's research consistently points to signage as the number one gap. The kiosk should function as a digital signage solution — wayfinding, awareness of what's available (eating allowed, washrooms, mobility access, computer usage). This reinforces the "gateway" principle.</div>
+      <div class="sticky lyon"><div class="author">Lyon</div><div class="title">Interface Feel — Welcoming, Not Clinical</div>The touchscreen UI should feel warm and approachable, not like an ATM. Large tap targets, icon-led navigation with clear text labels, no jargon. Students should be able to figure it out in under 10 seconds with zero instructions. Every screen should have a clear "I'm lost" or "help" escape.</div>
       <div class="sticky alicia"><div class="author">Alicia</div><div class="title">Alicia's Direction — Precedents</div>Three key precedents: (1) Indigo/Chapters catalogue search — bookstore kiosk model for browsing and finding items, (2) VPL/BPL check-out desk — public library self-service model, (3) Community-style bulletin board — student-driven event posting. Also noted that VPL, EPL, and TPL online catalogues all share nearly identical design layouts regardless of province.</div>
+      <div class="sticky alicia"><div class="author">Alicia</div><div class="title">Visual Identity — Kiosk as Library Brand</div>The kiosk's visual language should feel like ECUAD — warm, art-school, not corporate. Palette, typography, and illustration style should extend the library's existing brand. The storyboard will show how the kiosk looks, feels, and speaks. Students should see it and think "this is mine" before they even touch it.</div>
     </div>
   </div>
 
@@ -1140,7 +1522,7 @@ function applyReads(reads) {
     }
   });
   // Update badge
-  const unread = !currentUser || !(reads['update-002'] && reads['update-002'][currentUser]);
+  const unread = !currentUser || !(reads['update-003'] && reads['update-003'][currentUser]);
   document.getElementById('updateBadge').style.display = unread ? '' : 'none';
 }
 
