@@ -7,6 +7,7 @@
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #1a1a2e; color: #e0e0e0; min-height: 100vh; }
@@ -446,6 +447,7 @@
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
   <button class="tab-btn" onclick="switchTab('updates')" id="updatesTab">Updates <span class="tab-badge" id="updateBadge"></span></button>
+  <button class="tab-btn" onclick="switchTab('files')">Files</button>
 </div>
 
 <!-- ============================================ -->
@@ -858,6 +860,47 @@
 </div><!-- end tab-dashboard -->
 
 <!-- ============================================ -->
+<!-- FILES PAGE                                    -->
+<!-- ============================================ -->
+<div class="tab-content" id="tab-files">
+  <div class="updates-page">
+    <div class="update-card">
+      <div class="update-title" style="margin-bottom:0.4rem;">Team Files</div>
+      <div style="font-size:0.8rem; color:#7a7a9a; margin-bottom:1.2rem;">Upload project files here — research docs, photos, sketches, PDFs, anything. Everyone on the team can see and download them.</div>
+
+      <!-- Upload area -->
+      <div id="uploadArea" style="border:2px dashed #3a3a5a; border-radius:10px; padding:2rem; text-align:center; cursor:pointer; transition: all 0.15s; margin-bottom:1.2rem;"
+           ondragover="event.preventDefault(); this.style.borderColor='#a78bfa'; this.style.background='rgba(167,139,250,0.05)';"
+           ondragleave="this.style.borderColor='#3a3a5a'; this.style.background='transparent';"
+           ondrop="handleDrop(event)"
+           onclick="document.getElementById('fileInput').click();">
+        <div style="font-size:1.5rem; margin-bottom:0.5rem;">&#x1f4c1;</div>
+        <div style="font-size:0.85rem; color:#b0b0c8; font-weight:600;">Drag files here or click to upload</div>
+        <div style="font-size:0.7rem; color:#6a6a8a; margin-top:0.3rem;">Max 10MB per file · Any file type</div>
+        <input type="file" id="fileInput" multiple style="display:none;" onchange="handleFiles(this.files)">
+      </div>
+
+      <!-- Upload progress -->
+      <div id="uploadProgress" style="display:none; margin-bottom:1rem;">
+        <div style="font-size:0.75rem; color:#a78bfa; margin-bottom:0.3rem;" id="uploadStatus">Uploading...</div>
+        <div class="progress-track"><div class="progress-fill" id="uploadFill" style="width:0%"></div></div>
+      </div>
+
+      <!-- File list -->
+      <div id="fileList" style="font-size:0.8rem;">
+        <div style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1.5px; color:#6a6a8a; font-weight:700; margin-bottom:0.6rem;">Uploaded Files</div>
+        <div id="fileListItems" style="color:#7a7a9a; font-style:italic;">Loading files...</div>
+      </div>
+    </div>
+
+    <!-- Setup note for Storage -->
+    <div id="storageSetup" style="display:none; background:linear-gradient(135deg, #2a1a0a, #3a2a1a); border:1px solid #f59e0b; border-radius:8px; padding:1rem; font-size:0.78rem; color:#fcd34d; line-height:1.5;">
+      <strong>Enable File Uploads:</strong> Go to Firebase Console → <strong>Storage</strong> → Get Started → choose <strong>Start in test mode</strong> → Done. Then uploads will work.
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
 <!-- JAVASCRIPT — Firebase + localStorage sync     -->
 <!-- ============================================ -->
 <script>
@@ -1043,6 +1086,103 @@ if (USE_FIREBASE && db) {
     localStorage.setItem(READ_KEY, JSON.stringify(data));
     applyReads(data);
   });
+}
+
+// ==========================================
+// FILE UPLOADS (Firebase Storage)
+// ==========================================
+let storage = null;
+if (USE_FIREBASE) {
+  try {
+    storage = firebase.storage();
+    document.getElementById('storageSetup').style.display = 'none';
+  } catch(e) {
+    document.getElementById('storageSetup').style.display = 'block';
+  }
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  e.target.closest('#uploadArea').style.borderColor = '#3a3a5a';
+  e.target.closest('#uploadArea').style.background = 'transparent';
+  handleFiles(e.dataTransfer.files);
+}
+
+function handleFiles(files) {
+  if (!files.length) return;
+  if (!USE_FIREBASE || !storage) {
+    document.getElementById('storageSetup').style.display = 'block';
+    alert('File uploads require Firebase Storage. See setup instructions on the Files page.');
+    return;
+  }
+  for (const file of files) {
+    if (file.size > 10 * 1024 * 1024) { alert(file.name + ' is too large (max 10MB)'); continue; }
+    uploadFile(file);
+  }
+}
+
+function uploadFile(file) {
+  const prog = document.getElementById('uploadProgress');
+  const status = document.getElementById('uploadStatus');
+  const fill = document.getElementById('uploadFill');
+  prog.style.display = 'block';
+  status.textContent = 'Uploading ' + file.name + '...';
+  fill.style.width = '0%';
+
+  const ts = Date.now();
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const ref = storage.ref('project-files/' + ts + '_' + safeName);
+
+  const task = ref.put(file);
+  task.on('state_changed',
+    snap => { fill.style.width = Math.round((snap.bytesTransferred / snap.totalBytes) * 100) + '%'; },
+    err => { status.textContent = 'Upload failed: ' + err.message; fill.style.background = '#f87171'; },
+    () => {
+      task.snapshot.ref.getDownloadURL().then(url => {
+        // Save metadata to Realtime Database
+        const meta = {
+          name: file.name,
+          size: file.size,
+          type: file.type || 'unknown',
+          url: url,
+          uploadedBy: currentUser || 'Unknown',
+          uploadedAt: new Date().toISOString()
+        };
+        db.ref('files').push(meta);
+        status.textContent = file.name + ' uploaded!';
+        setTimeout(() => { prog.style.display = 'none'; }, 2000);
+      });
+    }
+  );
+}
+
+function renderFiles(files) {
+  const container = document.getElementById('fileListItems');
+  if (!files || Object.keys(files).length === 0) {
+    container.innerHTML = '<div style="color:#6a6a8a; font-style:italic;">No files uploaded yet. Be the first!</div>';
+    return;
+  }
+  const sorted = Object.entries(files).sort((a,b) => new Date(b[1].uploadedAt) - new Date(a[1].uploadedAt));
+  container.innerHTML = sorted.map(([id, f]) => {
+    const size = f.size < 1024 ? f.size + ' B' : f.size < 1048576 ? Math.round(f.size/1024) + ' KB' : (f.size/1048576).toFixed(1) + ' MB';
+    const date = new Date(f.uploadedAt).toLocaleDateString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+    const icon = f.type && f.type.includes('image') ? '&#x1f5bc;' : f.type && f.type.includes('pdf') ? '&#x1f4c4;' : '&#x1f4ce;';
+    return '<div style="display:flex; align-items:center; gap:0.8rem; padding:0.6rem 0.8rem; background:#16162e; border-radius:6px; margin-bottom:0.4rem;">'
+      + '<span style="font-size:1.1rem;">' + icon + '</span>'
+      + '<div style="flex:1; min-width:0;">'
+      + '<div style="color:#e0e0f0; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + f.name + '</div>'
+      + '<div style="font-size:0.68rem; color:#6a6a8a;">' + size + ' · ' + (f.uploadedBy || '?') + ' · ' + date + '</div>'
+      + '</div>'
+      + '<a href="' + f.url + '" target="_blank" download style="color:#a78bfa; font-size:0.7rem; font-weight:600; text-decoration:none; white-space:nowrap; padding:0.25rem 0.6rem; border:1px solid #a78bfa33; border-radius:4px;">Download</a>'
+      + '</div>';
+  }).join('');
+}
+
+// Listen for file list changes
+if (USE_FIREBASE && db) {
+  db.ref('files').on('value', snap => { renderFiles(snap.val()); });
+} else {
+  document.getElementById('fileListItems').innerHTML = '<div style="color:#6a6a8a;">Connect Firebase to enable file uploads.</div>';
 }
 </script>
 
