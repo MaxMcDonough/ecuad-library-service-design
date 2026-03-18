@@ -4,10 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>T2 Board Summary — ECUAD Library Service Design</title>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #1a1a2e; color: #e0e0e0; min-height: 100vh; }
 
+  /* ===== TOP BAR ===== */
   .top-bar {
     background: #0f0f1e;
     padding: 1.5rem 2rem;
@@ -15,10 +19,178 @@
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #2a2a4a;
+    flex-wrap: wrap;
+    gap: 0.8rem;
   }
   .top-bar h1 { font-size: 1.3rem; color: #fff; font-weight: 600; }
   .top-bar .meta { font-size: 0.8rem; color: #7a7a9a; }
 
+  /* Identity selector */
+  .identity-bar {
+    background: #12122a;
+    padding: 0.6rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid #2a2a4a;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .identity-bar label { color: #7a7a9a; }
+  .id-btn {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    border: 2px solid #3a3a5a;
+    background: transparent;
+    color: #b0b0c8;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .id-btn:hover { border-color: #6a6a8a; color: #fff; }
+  .id-btn.active-max { background: #fff3b0; color: #1a1a2e; border-color: #fff3b0; }
+  .id-btn.active-lyon { background: #b8d4f0; color: #1a1a2e; border-color: #b8d4f0; }
+  .id-btn.active-jennie { background: #f0c4d4; color: #1a1a2e; border-color: #f0c4d4; }
+  .id-btn.active-alicia { background: #b8e6d0; color: #1a1a2e; border-color: #b8e6d0; }
+  .sync-status { margin-left: auto; font-size: 0.7rem; color: #4ade80; display: flex; align-items: center; gap: 0.3rem; }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; }
+  .sync-status.offline .sync-dot { background: #facc15; }
+  .sync-status.offline { color: #facc15; }
+
+  /* ===== SETUP BANNER ===== */
+  .setup-banner {
+    background: linear-gradient(135deg, #2a1a0a, #3a2a1a);
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    margin: 1rem 2rem;
+    padding: 1.2rem;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: #fcd34d;
+  }
+  .setup-banner h3 { font-size: 0.9rem; margin-bottom: 0.5rem; color: #fbbf24; }
+  .setup-banner code { background: #1a1a2e; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.75rem; }
+  .setup-banner ol { padding-left: 1.2rem; margin: 0.5rem 0; }
+  .setup-banner .dismiss-btn {
+    margin-top: 0.8rem;
+    padding: 0.3rem 1rem;
+    background: #f59e0b;
+    color: #1a1a2e;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.75rem;
+  }
+
+  /* ===== TABS ===== */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    padding: 0 2rem;
+    background: #12122a;
+    border-bottom: 1px solid #2a2a4a;
+  }
+  .tab-btn {
+    padding: 0.7rem 1.5rem;
+    background: transparent;
+    border: none;
+    color: #7a7a9a;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .tab-btn:hover { color: #b0b0c8; }
+  .tab-btn.active { color: #fff; border-bottom-color: #a78bfa; }
+  .tab-badge {
+    position: absolute;
+    top: 6px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f87171;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ===== UPDATES SECTION ===== */
+  .updates-page { padding: 1rem 2rem 3rem; }
+  .update-card {
+    background: #1e1e38;
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid #2a2a4a;
+    margin-bottom: 1.2rem;
+  }
+  .update-card.pinned { border-color: #f87171; }
+  .update-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .update-from {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .update-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .update-meta { font-size: 0.7rem; color: #6a6a8a; }
+  .update-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 0.8rem; }
+  .update-body { font-size: 0.85rem; line-height: 1.7; color: #b0b0c8; }
+  .update-body ul { padding-left: 1.2rem; margin: 0.5rem 0; }
+  .update-body li { margin-bottom: 0.3rem; }
+  .update-body strong { color: #e0e0f0; }
+  .update-body .highlight { background: rgba(74,222,128,0.15); padding: 0.1rem 0.3rem; border-radius: 3px; color: #4ade80; font-weight: 600; }
+  .update-body .warn { background: rgba(248,113,113,0.15); padding: 0.1rem 0.3rem; border-radius: 3px; color: #f87171; font-weight: 600; }
+
+  /* Read receipts */
+  .read-receipts {
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #2a2a4a;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .read-receipts label { font-size: 0.7rem; color: #6a6a8a; text-transform: uppercase; letter-spacing: 1px; }
+  .read-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    border: 1.5px solid #3a3a5a;
+    background: transparent;
+    color: #7a7a9a;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .read-btn:hover { border-color: #6a6a8a; }
+  .read-btn.read { background: rgba(74,222,128,0.15); border-color: #4ade80; color: #4ade80; }
+  .read-btn .read-check { font-size: 0.8rem; }
+
+  /* ===== STATUS BAR ===== */
   .status-bar {
     background: #12122a;
     padding: 0.8rem 2rem;
@@ -61,7 +233,42 @@
     gap: 2rem;
   }
 
-  /* HERO / DIRECTION BLOCK */
+  /* ===== INTERACTIVE CHECKBOXES ===== */
+  .cb {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.12s;
+  }
+  .cb:hover { opacity: 0.85; }
+  .cb-box {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #4a4a6a;
+    border-radius: 3px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: transparent;
+    transition: all 0.12s;
+  }
+  .cb.checked .cb-box {
+    background: #4ade80;
+    border-color: #4ade80;
+    color: #0a1a0a;
+  }
+  .cb.checked .cb-box::after { content: '\2713'; }
+  .cb.checked .cb-label { text-decoration: line-through; opacity: 0.55; }
+  .cb-label { transition: all 0.12s; }
+  .cb-box-dim { border-color: #3a3a4a; }
+  .cb.checked .cb-box-dim { background: #6a6a8a; border-color: #6a6a8a; }
+
+  /* ===== DIRECTION HERO ===== */
   .direction-hero {
     background: linear-gradient(135deg, #2a1a4e 0%, #1a2a4e 50%, #1a3a3a 100%);
     border-radius: 12px;
@@ -111,7 +318,6 @@
     color: #b8b0d0;
     margin-bottom: 1.2rem;
   }
-
   .feature-modules {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -124,447 +330,251 @@
     padding: 1.2rem;
     border: 1px solid rgba(255,255,255,0.08);
   }
-  .module-header {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 0.6rem;
-  }
+  .module-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
   .module-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
   }
-  .module h4 {
-    font-size: 0.9rem;
-    color: #fff;
-  }
-  .module h4 small {
-    display: block;
-    font-size: 0.7rem;
-    color: #8a80a0;
-    font-weight: 400;
-    margin-top: 0.1rem;
-  }
-  .module p {
-    font-size: 0.8rem;
-    color: #9a90b0;
-    line-height: 1.5;
-  }
-  .module ul {
-    list-style: none;
-    margin-top: 0.5rem;
-  }
-  .module ul li {
-    font-size: 0.78rem;
-    color: #9a90b0;
-    padding: 0.15rem 0;
-    padding-left: 1rem;
-    position: relative;
-  }
-  .module ul li::before {
-    content: '>';
-    position: absolute;
-    left: 0;
-    color: #6a6a8a;
-    font-weight: 700;
-  }
+  .module h4 { font-size: 0.9rem; color: #fff; }
+  .module h4 small { display: block; font-size: 0.7rem; color: #8a80a0; font-weight: 400; margin-top: 0.1rem; }
+  .module p { font-size: 0.8rem; color: #9a90b0; line-height: 1.5; }
+  .module ul { list-style: none; margin-top: 0.5rem; }
+  .module ul li { font-size: 0.78rem; color: #9a90b0; padding: 0.15rem 0; padding-left: 1rem; position: relative; }
+  .module ul li::before { content: '>'; position: absolute; left: 0; color: #6a6a8a; font-weight: 700; }
 
-  .direction-principles {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1.5rem;
-    flex-wrap: wrap;
-  }
-  .principle {
-    flex: 1;
-    min-width: 200px;
-    background: rgba(255,255,255,0.04);
-    border-radius: 8px;
-    padding: 1rem;
-    border-top: 3px solid;
-  }
-  .principle h4 {
-    font-size: 0.82rem;
-    color: #fff;
-    margin-bottom: 0.3rem;
-  }
-  .principle p {
-    font-size: 0.78rem;
-    color: #9a90b0;
-    line-height: 1.45;
-  }
+  .direction-principles { display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
+  .principle { flex: 1; min-width: 200px; background: rgba(255,255,255,0.04); border-radius: 8px; padding: 1rem; border-top: 3px solid; }
+  .principle h4 { font-size: 0.82rem; color: #fff; margin-bottom: 0.3rem; }
+  .principle p { font-size: 0.78rem; color: #9a90b0; line-height: 1.45; }
 
-  .direction-tech {
-    margin-top: 1.2rem;
-    display: flex;
-    gap: 0.6rem;
-    flex-wrap: wrap;
-  }
-  .tech-tag {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: #c0c0e0;
-    font-size: 0.7rem;
-    padding: 0.25rem 0.6rem;
-    border-radius: 4px;
-    font-weight: 600;
-  }
+  .direction-tech { margin-top: 1.2rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .tech-tag { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: #c0c0e0; font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 4px; font-weight: 600; }
 
-  .section {
-    background: #1e1e38;
-    border-radius: 10px;
-    padding: 1.5rem;
-    border: 1px solid #2a2a4a;
-  }
-  .section-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-  .section-label {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #6a6a8a;
-  }
-  .section-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #fff;
-    margin-top: 0.2rem;
-  }
-  .section-status {
-    font-size: 0.7rem;
-    padding: 0.25rem 0.7rem;
-    border-radius: 20px;
-    font-weight: 600;
-  }
+  /* ===== SECTIONS ===== */
+  .section { background: #1e1e38; border-radius: 10px; padding: 1.5rem; border: 1px solid #2a2a4a; }
+  .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .section-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: #6a6a8a; }
+  .section-title { font-size: 1.1rem; font-weight: 600; color: #fff; margin-top: 0.2rem; }
+  .section-status { font-size: 0.7rem; padding: 0.25rem 0.7rem; border-radius: 20px; font-weight: 600; }
   .status-complete { background: #1a3a2a; color: #4ade80; }
   .status-active { background: #3a3a1a; color: #facc15; }
   .status-upcoming { background: #2a2a3a; color: #64748b; }
   .status-new { background: #2a1a3a; color: #c084fc; }
+  .section-summary { font-size: 0.88rem; line-height: 1.65; color: #b0b0c8; margin-bottom: 1.2rem; padding: 0.8rem 1rem; background: #16162e; border-radius: 6px; border-left: 3px solid #4a4a6a; }
 
-  .section-summary {
-    font-size: 0.88rem;
-    line-height: 1.65;
-    color: #b0b0c8;
-    margin-bottom: 1.2rem;
-    padding: 0.8rem 1rem;
-    background: #16162e;
-    border-radius: 6px;
-    border-left: 3px solid #4a4a6a;
-  }
-
-  .sticky-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 0.8rem;
-  }
-
-  .sticky {
-    padding: 1rem 1.1rem;
-    border-radius: 5px;
-    font-size: 0.82rem;
-    line-height: 1.5;
-    color: #1a1a2e;
-    min-height: 100px;
-    box-shadow: 2px 3px 10px rgba(0,0,0,0.3);
-    transition: transform 0.15s;
-  }
+  .sticky-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.8rem; }
+  .sticky { padding: 1rem 1.1rem; border-radius: 5px; font-size: 0.82rem; line-height: 1.5; color: #1a1a2e; min-height: 100px; box-shadow: 2px 3px 10px rgba(0,0,0,0.3); transition: transform 0.15s; }
   .sticky:hover { transform: translateY(-2px); }
-  .sticky .author {
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    font-weight: 700;
-    margin-bottom: 0.4rem;
-    opacity: 0.6;
-  }
-  .sticky .title {
-    font-weight: 700;
-    font-size: 0.88rem;
-    margin-bottom: 0.35rem;
-  }
-
+  .sticky .author { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; margin-bottom: 0.4rem; opacity: 0.6; }
+  .sticky .title { font-weight: 700; font-size: 0.88rem; margin-bottom: 0.35rem; }
   .sticky.max { background: #fff3b0; }
   .sticky.alicia { background: #b8e6d0; }
   .sticky.lyon { background: #b8d4f0; }
-  .sticky.jenny { background: #f0c4d4; }
+  .sticky.jennie { background: #f0c4d4; }
   .sticky.team { background: #d8d0f0; }
+  .sticky.placeholder { border: 2px dashed rgba(0,0,0,0.15); opacity: 0.75; }
+  .sticky.placeholder .placeholder-tag { display: inline-block; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.08); padding: 0.15rem 0.4rem; border-radius: 3px; margin-bottom: 0.3rem; font-weight: 700; }
 
-  /* Placeholder stickies */
-  .sticky.placeholder {
-    border: 2px dashed rgba(0,0,0,0.15);
-    opacity: 0.75;
-  }
-  .sticky.placeholder .placeholder-tag {
-    display: inline-block;
-    font-size: 0.55rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    background: rgba(0,0,0,0.08);
-    padding: 0.15rem 0.4rem;
-    border-radius: 3px;
-    margin-bottom: 0.3rem;
-    font-weight: 700;
-  }
-
-  .timeline {
-    background: #1e1e38;
-    border-radius: 10px;
-    padding: 1.5rem;
-    border: 1px solid #2a2a4a;
-  }
-  .timeline h2 {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #6a6a8a;
-    margin-bottom: 1rem;
-  }
-  .timeline-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 0.8rem;
-    font-size: 0.85rem;
-  }
-  .timeline-date {
-    width: 80px;
-    flex-shrink: 0;
-    font-weight: 600;
-    color: #9a9ab0;
-    font-size: 0.78rem;
-  }
-  .timeline-marker {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 4px;
-  }
+  /* ===== TIMELINE ===== */
+  .timeline { background: #1e1e38; border-radius: 10px; padding: 1.5rem; border: 1px solid #2a2a4a; }
+  .timeline h2 { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: #6a6a8a; margin-bottom: 1rem; }
+  .timeline-row { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 0.8rem; font-size: 0.85rem; }
+  .timeline-date { width: 80px; flex-shrink: 0; font-weight: 600; color: #9a9ab0; font-size: 0.78rem; }
+  .timeline-marker { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
   .timeline-text { color: #c0c0d8; }
   .timeline-text strong { color: #fff; }
 
-  .key-findings {
-    background: #1e1e38;
-    border-radius: 10px;
-    padding: 1.5rem;
-    border: 1px solid #2a2a4a;
-  }
-  .key-findings h2 {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #6a6a8a;
-    margin-bottom: 1rem;
-  }
-  .finding-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 0.8rem;
-  }
-  .finding {
-    background: #16162e;
-    border-radius: 6px;
-    padding: 1rem;
-    border-left: 3px solid;
-  }
-  .finding h4 {
-    font-size: 0.85rem;
-    color: #fff;
-    margin-bottom: 0.3rem;
-  }
-  .finding p {
-    font-size: 0.8rem;
-    color: #9a9ab0;
-    line-height: 1.5;
-  }
-  .finding.red { border-left-color: #f87171; }
-  .finding.yellow { border-left-color: #facc15; }
-  .finding.blue { border-left-color: #60a5fa; }
-  .finding.green { border-left-color: #4ade80; }
-  .finding.purple { border-left-color: #a78bfa; }
-  .finding.orange { border-left-color: #fb923c; }
-  .finding.pink { border-left-color: #f472b6; }
+  .key-findings { background: #1e1e38; border-radius: 10px; padding: 1.5rem; border: 1px solid #2a2a4a; }
+  .key-findings h2 { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: #6a6a8a; margin-bottom: 1rem; }
+  .finding-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0.8rem; }
+  .finding { background: #16162e; border-radius: 6px; padding: 1rem; border-left: 3px solid; }
+  .finding h4 { font-size: 0.88rem; color: #fff; margin-bottom: 0.3rem; }
+  .finding p { font-size: 0.8rem; color: #9a90b0; line-height: 1.5; }
+  .finding.red { border-color: #f87171; }
+  .finding.green { border-color: #4ade80; }
+  .finding.yellow { border-color: #facc15; }
+  .finding.blue { border-color: #60a5fa; }
+  .finding.purple { border-color: #a78bfa; }
+  .finding.orange { border-color: #fb923c; }
+  .finding.pink { border-color: #f472b6; }
+
+  /* ===== PROGRESS BAR ===== */
+  .progress-bar-wrap { margin: 0.5rem 0 1rem; }
+  .progress-label { font-size: 0.7rem; color: #7a7a9a; margin-bottom: 0.3rem; display: flex; justify-content: space-between; }
+  .progress-track { height: 6px; background: #2a2a4a; border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #4ade80, #a78bfa); transition: width 0.4s ease; }
 </style>
 </head>
 <body>
 
+<!-- ===== TOP BAR ===== -->
 <div class="top-bar">
   <div>
     <h1>T2 — ECUAD Library Service Design</h1>
-    <div class="meta">Lyon · Alicia · Jenny · Max</div>
-  </div>
-  <div style="text-align:right">
     <div class="meta">Board Summary · Updated March 17, 2026 · Roles Confirmed</div>
-    <div class="meta">Prompts: #2 Reducing Friction · #3 Finding Resources</div>
   </div>
 </div>
 
-<div class="status-bar">
-  <div class="status-item"><div class="status-dot dot-done"></div> Safari Complete</div>
-  <div class="status-item"><div class="status-dot dot-done"></div> AEIOU Synthesis</div>
-  <div class="status-item"><div class="status-dot dot-done"></div> Research Questions Drafted</div>
-  <div class="status-item"><div class="status-dot dot-done"></div> Direction Locked In</div>
-  <div class="status-item"><div class="status-dot dot-next"></div> Library Field Visit (Mar 20)</div>
-  <div class="status-item"><div class="status-dot dot-next"></div> Service Design Pitch (Mar 24)</div>
-  <div class="status-item"><div class="status-dot dot-future"></div> Production (Mar 27–Apr 7)</div>
-  <div class="status-item"><div class="status-dot dot-future"></div> Final Presentations (Apr 10)</div>
+<!-- ===== IDENTITY BAR ===== -->
+<div class="identity-bar">
+  <label>I am:</label>
+  <button class="id-btn" data-name="Max" onclick="setIdentity('Max')">Max</button>
+  <button class="id-btn" data-name="Lyon" onclick="setIdentity('Lyon')">Lyon</button>
+  <button class="id-btn" data-name="Jennie" onclick="setIdentity('Jennie')">Jennie</button>
+  <button class="id-btn" data-name="Alicia" onclick="setIdentity('Alicia')">Alicia</button>
+  <div class="sync-status" id="syncStatus">
+    <span class="sync-dot"></span>
+    <span id="syncLabel">Local mode</span>
+  </div>
 </div>
 
-<div class="legend">
-  <div class="legend-item"><div class="legend-swatch" style="background:#fff3b0"></div> Max</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:#b8e6d0"></div> Alicia</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:#b8d4f0"></div> Lyon</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:#f0c4d4"></div> Jenny</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:#d8d0f0"></div> Team / Shared</div>
-  <div class="legend-item" style="margin-left:1rem; border-left: 1px solid #3a3a5a; padding-left:1rem;"><span style="border: 2px dashed #6a6a8a; width:14px; height:14px; border-radius:3px; display:inline-block;"></span> Placeholder — needs real input</div>
+<!-- ===== SETUP BANNER ===== -->
+<div class="setup-banner" id="setupBanner">
+  <h3>Enable Real-Time Sync (5 min setup)</h3>
+  Right now checkboxes save to your browser only. To sync across all devices so everyone sees the same progress:
+  <ol>
+    <li>Go to <a href="https://console.firebase.google.com" target="_blank" style="color:#fbbf24;">console.firebase.google.com</a> and create a free project</li>
+    <li>Go to <strong>Realtime Database</strong> → Create Database → choose <strong>Start in test mode</strong></li>
+    <li>Go to <strong>Project Settings</strong> → scroll to "Your apps" → click <strong>Web (&lt;/&gt;)</strong> → Register app</li>
+    <li>Copy the <code>firebaseConfig</code> values and paste them into the JS at the bottom of this HTML file</li>
+  </ol>
+  <button class="dismiss-btn" onclick="document.getElementById('setupBanner').style.display='none'; localStorage.setItem('dismissSetup','1');">Got it, dismiss</button>
 </div>
 
-<div class="board">
+<!-- ===== TABS ===== -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
+  <button class="tab-btn" onclick="switchTab('updates')" id="updatesTab">Updates <span class="tab-badge" id="updateBadge"></span></button>
+</div>
 
-  <!-- =============================== -->
-  <!-- PROJECT DIRECTION HERO           -->
-  <!-- =============================== -->
+<!-- ============================================ -->
+<!-- UPDATES PAGE                                  -->
+<!-- ============================================ -->
+<div class="tab-content" id="tab-updates">
+  <div class="updates-page">
+
+    <div class="update-card pinned">
+      <div class="update-header">
+        <div class="update-from">
+          <div class="update-avatar" style="background:#fff3b0;">M</div>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:#fff;">Max <span style="font-size:0.7rem; color:#4ade80;">SR</span></div>
+            <div class="update-meta">March 17, 2026 · Pinned</div>
+          </div>
+        </div>
+        <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1.5px; background:#f8717133; color:#f87171; padding:0.2rem 0.6rem; border-radius:10px; font-weight:700;">Important</div>
+      </div>
+      <div class="update-title">Library Staff Meeting — Big News</div>
+      <div class="update-body">
+        <p>Hey team — I went to the library after class today and ended up meeting with three staff members:</p>
+        <ul>
+          <li><strong>Michelle Ng</strong> — Resources / Discovery Librarian</li>
+          <li><strong>Hillary Welde</strong> — Visiting / Technical Services Librarian</li>
+          <li><strong>Emma Somers</strong> — Library Operations Coordinator</li>
+        </ul>
+        <p>Key takeaways:</p>
+        <ul>
+          <li><span class="highlight">Hillary and Michelle will be at our final presentation (Apr 10)</span> — they're genuinely excited about what we're building</li>
+          <li>They <strong>loved</strong> our project direction (the kiosk concept)</li>
+          <li>I requested the <strong>full library collection spreadsheet</strong> — books, movies, audio, magazines, photography archives — and they're preparing it. Should have it before our Friday meeting</li>
+          <li>They showed me the back end of the library system (<strong>Evergreen ILS</strong>) and asked my opinion on the broken login to the existing online system</li>
+          <li><span class="warn">Keep this quiet from other groups</span> — working with real library data is a massive advantage for us</li>
+        </ul>
+        <p>This is huge — we have real stakeholder buy-in and will soon have actual collection data to work with. Let's make the most of it.</p>
+      </div>
+      <div class="read-receipts">
+        <label>Read by:</label>
+        <button class="read-btn" data-update="update-001" data-reader="Max" onclick="markRead('update-001','Max')">
+          <span class="read-check">&#9744;</span> Max
+        </button>
+        <button class="read-btn" data-update="update-001" data-reader="Lyon" onclick="markRead('update-001','Lyon')">
+          <span class="read-check">&#9744;</span> Lyon
+        </button>
+        <button class="read-btn" data-update="update-001" data-reader="Jennie" onclick="markRead('update-001','Jennie')">
+          <span class="read-check">&#9744;</span> Jennie
+        </button>
+        <button class="read-btn" data-update="update-001" data-reader="Alicia" onclick="markRead('update-001','Alicia')">
+          <span class="read-check">&#9744;</span> Alicia
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- DASHBOARD PAGE                                -->
+<!-- ============================================ -->
+<div class="tab-content active" id="tab-dashboard">
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div class="status-item"><div class="status-dot dot-done"></div> Safari complete</div>
+    <div class="status-item"><div class="status-dot dot-done"></div> Direction locked</div>
+    <div class="status-item"><div class="status-dot dot-done"></div> Roles confirmed</div>
+    <div class="status-item"><div class="status-dot dot-next"></div> Library visit Mar 20</div>
+    <div class="status-item"><div class="status-dot dot-next"></div> Presentation Mar 24</div>
+    <div class="status-item"><div class="status-dot dot-future"></div> Final Apr 10</div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#fff3b0;"></div> Max (SR)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#b8d4f0;"></div> Lyon (XD)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#f0c4d4;"></div> Jennie (TM)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#b8e6d0;"></div> Alicia (VC)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#d8d0f0;"></div> Team</div>
+  </div>
+
+  <div class="board">
+
+  <!-- ===== DIRECTION HERO ===== -->
   <div class="direction-hero">
-    <div class="direction-badge">Project Direction — Locked In</div>
-    <h2>The Library Kiosk: Find Your Voice, Find Your Community</h2>
-    <div class="tagline">An interactive Raspberry Pi station that helps students navigate the library, manage their student life, and find their people — without hiding behind a screen.</div>
-
+    <div class="direction-badge">Service Direction — Locked In</div>
+    <h2>Interactive Library Kiosk</h2>
+    <div class="tagline">"A gateway, not a wall — making the invisible visible."</div>
     <div class="direction-desc">
-      We're building an interactive kiosk powered by a Raspberry Pi that lives in the ECUAD library. Think of it as a mix between an Indigo Chapters wayfinding station, a student services portal, and a community bulletin board — all in one physical touchpoint.
-    </div>
-    <div class="direction-desc">
-      It handles the practical stuff: find where a book lives in the stacks, check out materials, top up your print card, pay tuition balances, manage your student account. But that's just the surface.
-    </div>
-    <div class="direction-desc">
-      The real purpose is community. The kiosk has a living bulletin board where students can post activities — "I'm going hiking this Saturday, who's in?" — and other students can join. It syncs to personal calendars and sends Slack or email blasts to people who've flagged those interests. Game nights, movie screenings, study groups, art shows, talks — all surfaced in one place, created by students for students.
-    </div>
-    <div class="direction-desc">
-      <strong>The core design principle:</strong> This kiosk does NOT replace human interaction or let students retreat into their shells. It's a confidence builder. It gives students — especially those who are shy, new, international, or unsure — the information and the invitation they need to engage with the library, the staff, and each other. Find your voice. Find your community.
+      A Raspberry Pi-powered touchscreen kiosk placed inside the ECUAD library. It helps students navigate the space, discover hidden services (games lending, resource swap, special collections), manage their student account (print cards, book returns), and connect with community events — all without needing to approach the front desk first.
     </div>
 
-    <!-- FEATURE MODULES -->
-    <h3 style="font-size:0.65rem; text-transform:uppercase; letter-spacing:2px; color:#8a80a0; margin-top:1.5rem; margin-bottom:1rem;">Feature Modules</h3>
+    <h3 style="font-size:0.65rem; text-transform:uppercase; letter-spacing:2px; color:#8a80a0; margin-bottom:1rem;">Core Modules</h3>
     <div class="feature-modules">
-
       <div class="module">
         <div class="module-header">
-          <div class="module-icon" style="background:#2a1a4e; color:#a78bfa;">&#x1f4da;</div>
-          <h4>Wayfinding & Stacks<small>Indigo Chapters-style</small></h4>
+          <div class="module-icon" style="background:#1a3a2a;">&#x1f5fa;</div>
+          <h4>Wayfinding<small>Floor maps + collection search</small></h4>
         </div>
-        <p>Search for materials and see exactly where they are — floor, section, shelf. Visual map of the library with real-time availability.</p>
-        <ul>
-          <li>Search by title, author, course, or topic</li>
-          <li>Floor-by-floor interactive map</li>
-          <li>Highlights hidden collections (film, archives, special collections)</li>
-          <li>Shows what's available to borrow (games, equipment, plinths)</li>
-        </ul>
+        <p>Search the stacks like a bookstore kiosk. Floor-by-floor map showing where materials live — including the hidden stuff like film archives, games, and special collections.</p>
       </div>
-
       <div class="module">
         <div class="module-header">
-          <div class="module-icon" style="background:#1a2a3a; color:#60a5fa;">&#x1f4b3;</div>
-          <h4>Student Account Hub<small>Fees, cards, balances</small></h4>
+          <div class="module-icon" style="background:#2a1a3a;">&#x1f464;</div>
+          <h4>Student Account Hub<small>Print cards, balances, check-out</small></h4>
         </div>
-        <p>Handle the admin stuff without waiting in line. One place for everything financial and account-related.</p>
-        <ul>
-          <li>Top up print card balance</li>
-          <li>Pay tuition fees or account balances</li>
-          <li>Check out and return books</li>
-          <li>View account status and dues</li>
-          <li>Master your student account from one screen</li>
-        </ul>
+        <p>Top up print cards. Check out and return books. View account status. All the stuff that currently clogs the front desk — handled through one screen.</p>
       </div>
-
       <div class="module">
         <div class="module-header">
-          <div class="module-icon" style="background:#1a3a2a; color:#4ade80;">&#x1f4cc;</div>
-          <h4>Community Board<small>Bulletin board + event creation</small></h4>
+          <div class="module-icon" style="background:#1a2a3a;">&#x1f4cc;</div>
+          <h4>Community Board<small>Student-powered events + social</small></h4>
         </div>
-        <p>A living, student-powered bulletin board. Browse what's happening, or post your own thing and watch people join.</p>
-        <ul>
-          <li>Browse upcoming events, game nights, talks, screenings</li>
-          <li>Post your own: "Hiking Saturday — who's in?"</li>
-          <li>Other students tap to join</li>
-          <li>Filter by interest: outdoors, games, art, social, academic</li>
-          <li>Staff can also post library events and workshops</li>
-        </ul>
+        <p>Post activities ("hiking Saturday"), others join. Board games, movie nights, study groups. Syncs to calendars. Makes the invisible community visible.</p>
       </div>
-
       <div class="module">
         <div class="module-header">
-          <div class="module-icon" style="background:#3a2a1a; color:#fb923c;">&#x1f514;</div>
-          <h4>Smart Notifications<small>Calendar + Slack + email</small></h4>
+          <div class="module-icon" style="background:#3a2a1a;">&#x1f514;</div>
+          <h4>Smart Notifications<small>Calendar sync + interest matching</small></h4>
         </div>
-        <p>When you join an event, it doesn't just disappear into a list. It becomes real — synced and shared.</p>
-        <ul>
-          <li>Auto-adds events to your personal calendar</li>
-          <li>Sends Slack or email blast to interested students</li>
-          <li>Notifications based on flagged interests</li>
-          <li>"3 people from your program are going to Board Game Night"</li>
-          <li>Reminders before events start</li>
-        </ul>
-      </div>
-
-      <div class="module">
-        <div class="module-header">
-          <div class="module-icon" style="background:#3a1a2a; color:#f472b6;">&#x1f91d;</div>
-          <h4>Confidence & Connection<small>The soul of the kiosk</small></h4>
-        </div>
-        <p>Every screen, every interaction is designed to nudge students toward people — not away from them.</p>
-        <ul>
-          <li>Prompts: "Have a question? Sarah at the desk loves this topic"</li>
-          <li>"5 students near you are also looking for study partners"</li>
-          <li>Warm, inclusive language throughout</li>
-          <li>Multilingual support for international students</li>
-          <li>Designed for the person who's most unsure — if it works for them, it works for everyone</li>
-        </ul>
-      </div>
-
-      <div class="module">
-        <div class="module-header">
-          <div class="module-icon" style="background:#2a2a1a; color:#facc15;">&#x1f30d;</div>
-          <h4>Upcoming Events Feed<small>Library + student-created</small></h4>
-        </div>
-        <p>Everything that's happening, in one feed. No more hidden flyers or word-of-mouth-only events.</p>
-        <ul>
-          <li>Library workshops, writing centre sessions</li>
-          <li>Student-organized game nights, movie nights</li>
-          <li>Club events, talks, screenings</li>
-          <li>Resource swap drops and art supply exchanges</li>
-          <li>Sign up on the spot — one tap</li>
-        </ul>
+        <p>When you join something, it syncs to your calendar and pings people with matching interests. "3 people from your program are going to Board Game Night."</p>
       </div>
     </div>
 
-    <!-- DESIGN PRINCIPLES -->
     <h3 style="font-size:0.65rem; text-transform:uppercase; letter-spacing:2px; color:#8a80a0; margin-top:1.5rem; margin-bottom:1rem;">Design Principles</h3>
     <div class="direction-principles">
-      <div class="principle" style="border-top-color: #4ade80;">
-        <h4>Gateway, Not a Wall</h4>
-        <p>The kiosk starts interactions, it doesn't end them. Every feature bridges students to staff, events, or each other.</p>
-      </div>
-      <div class="principle" style="border-top-color: #a78bfa;">
-        <h4>Voice Before Efficiency</h4>
-        <p>We're not optimizing for speed. We're building confidence. A student who feels welcome will come back. A fast transaction won't.</p>
-      </div>
-      <div class="principle" style="border-top-color: #f472b6;">
-        <h4>Designed for the Unsure</h4>
-        <p>Multicultural students, foundation-year, introverts, first-gen — if the most hesitant person feels welcome, everyone does.</p>
-      </div>
-      <div class="principle" style="border-top-color: #60a5fa;">
-        <h4>Community Is the Product</h4>
-        <p>The kiosk is a tool. The community is the outcome. Every feature should make someone feel less alone.</p>
-      </div>
+      <div class="principle" style="border-top-color: #4ade80;"><h4>Gateway, Not a Wall</h4><p>The kiosk starts interactions, it doesn't end them. Every feature bridges students to staff, events, or each other.</p></div>
+      <div class="principle" style="border-top-color: #a78bfa;"><h4>Voice Before Efficiency</h4><p>We're not optimizing for speed. We're building confidence. A student who feels welcome will come back.</p></div>
+      <div class="principle" style="border-top-color: #f472b6;"><h4>Designed for the Unsure</h4><p>Multicultural students, foundation-year, introverts, first-gen — if the most hesitant person feels welcome, everyone does.</p></div>
+      <div class="principle" style="border-top-color: #60a5fa;"><h4>Community Is the Product</h4><p>The kiosk is a tool. The community is the outcome. Every feature should make someone feel less alone.</p></div>
     </div>
 
     <div class="direction-tech">
@@ -581,465 +591,110 @@
     </div>
   </div>
 
-  <!-- =============================== -->
-  <!-- KEY FINDINGS                     -->
-  <!-- =============================== -->
+  <!-- ===== KEY FINDINGS ===== -->
   <div class="key-findings">
     <h2>Research Findings That Led Us Here</h2>
     <div class="finding-grid">
-      <div class="finding red">
-        <h4>Main Floor = Print Shop</h4>
-        <p>Most front-desk activity is printing, card loading, and troubleshooting. The library entrance reads as a transactional service counter, not a place to explore or linger.</p>
-      </div>
-      <div class="finding green">
-        <h4>Lower Level = The Real Library</h4>
-        <p>Plants, natural light, beanbags, hammock, compact shelving with archival film materials. People come down here to stay. Completely different energy from upstairs.</p>
-      </div>
-      <div class="finding yellow">
-        <h4>Wayfinding Is Broken</h4>
-        <p>Bathrooms are hidden. Elevator use is ambiguous. Book borrowing process has no clear signage. Return sign is blocked by a display case. Beginners are lost.</p>
-      </div>
-      <div class="finding blue">
-        <h4>Hidden Services Everywhere</h4>
-        <p>Games lending, resource swap, bookable rooms, special collections — they exist but almost nobody knows about them. No visible communication strategy.</p>
-      </div>
-      <div class="finding purple">
-        <h4>Staff Are Great but Anchored</h4>
-        <p>Friendly, approachable, always helpful — but confined to the front desk. Zero staff presence on lower or middle floors. Interactions are almost entirely operational.</p>
-      </div>
-      <div class="finding orange">
-        <h4>Public Space, Blurred Boundaries</h4>
-        <p>The whole main floor is public. Non-ECU visitors use computers and the library without signing in. No clear boundary between library and general building.</p>
-      </div>
-      <div class="finding pink">
-        <h4>Physical Access Is a Barrier</h4>
-        <p>No first-floor entrance — students must go upstairs to enter. Security alarm no longer works, so the restriction is pointless. Dead plants waste desk space. Second-floor wing feels unstable and underused. (Jenny)</p>
-      </div>
+      <div class="finding red"><h4>Main Floor = Print Shop</h4><p>Most front-desk activity is printing, card loading, and troubleshooting. The library entrance reads as a transactional service counter, not a place to explore or linger.</p></div>
+      <div class="finding green"><h4>Lower Level = The Real Library</h4><p>Plants, natural light, beanbags, hammock, compact shelving with archival film materials. People come down here to stay. Completely different energy from upstairs.</p></div>
+      <div class="finding yellow"><h4>Wayfinding Is Broken</h4><p>Bathrooms are hidden. Elevator use is ambiguous. Book borrowing process has no clear signage. Return sign is blocked by a display case. Beginners are lost.</p></div>
+      <div class="finding blue"><h4>Hidden Services Everywhere</h4><p>Games lending, resource swap, bookable rooms, special collections — they exist but almost nobody knows about them. No visible communication strategy.</p></div>
+      <div class="finding purple"><h4>Staff Are Great but Anchored</h4><p>Friendly, approachable, always helpful — but confined to the front desk. Zero staff presence on lower or middle floors. Interactions are almost entirely operational.</p></div>
+      <div class="finding orange"><h4>Public Space, Blurred Boundaries</h4><p>The whole main floor is public. Non-ECU visitors use computers and the library without signing in. No clear boundary between library and general building.</p></div>
+      <div class="finding pink"><h4>Physical Access Is a Barrier</h4><p>No first-floor entrance — students must go upstairs to enter. Security alarm no longer works, so the restriction is pointless. Dead plants waste desk space. Second-floor wing feels unstable and underused. (Jennie)</p></div>
     </div>
   </div>
 
-  <!-- =============================== -->
-  <!-- TIMELINE                         -->
-  <!-- =============================== -->
+  <!-- ===== TIMELINE ===== -->
   <div class="timeline">
     <h2>Project Timeline</h2>
-    <div class="timeline-row">
-      <div class="timeline-date">Mar 13</div>
-      <div class="timeline-marker dot-done"></div>
-      <div class="timeline-text"><strong>Safari + Project Launch</strong> — Individual observations using AEIOU framework</div>
-    </div>
-    <div class="timeline-row">
-      <div class="timeline-date">Mar 15</div>
-      <div class="timeline-marker dot-done"></div>
-      <div class="timeline-text"><strong>Team Observation Session</strong> — Colour-coded sticky notes (black = general, blue = personal)</div>
-    </div>
-    <div class="timeline-row">
-      <div class="timeline-date">Mar 17</div>
-      <div class="timeline-marker dot-done"></div>
-      <div class="timeline-text"><strong>Direction Locked In</strong> — Interactive kiosk concept with wayfinding, student account, community board, notifications</div>
-    </div>
-    <div class="timeline-row">
-      <div class="timeline-date">Mar 20</div>
-      <div class="timeline-marker dot-next"></div>
-      <div class="timeline-text"><strong>Library Field Visit</strong> — Meet with library staff, validate kiosk concept, bring research questions</div>
-    </div>
-    <div class="timeline-row">
-      <div class="timeline-date">Mar 24</div>
-      <div class="timeline-marker dot-next"></div>
-      <div class="timeline-text"><strong>Project Update Presentation (10 Slides)</strong> — Research Retrospective (4 slides), Personas, Journey Map divider, As-Is Journey Map, Service Direction, Precedents, Early Sketches</div>
-    </div>
-    <div class="timeline-row">
-      <div class="timeline-date">Mar 27–Apr 7</div>
-      <div class="timeline-marker dot-future"></div>
-      <div class="timeline-text"><strong>Production Days</strong> — Figma prototype, RPi kiosk build, enclosure design, storyboard</div>
-    </div>
-    <div class="timeline-row">
-      <div class="timeline-date">Apr 10</div>
-      <div class="timeline-marker dot-future"></div>
-      <div class="timeline-text"><strong>Final Presentations</strong> — Library staff present</div>
-    </div>
-    <div class="timeline-row">
-      <div class="timeline-date">Apr 17</div>
-      <div class="timeline-marker dot-future"></div>
-      <div class="timeline-text"><strong>Documentation Upload</strong></div>
-    </div>
+    <div class="timeline-row"><div class="timeline-date">Mar 13</div><div class="timeline-marker dot-done"></div><div class="timeline-text"><strong>Safari + Project Launch</strong> — Individual observations using AEIOU framework</div></div>
+    <div class="timeline-row"><div class="timeline-date">Mar 15</div><div class="timeline-marker dot-done"></div><div class="timeline-text"><strong>Team Observation Session</strong> — Colour-coded sticky notes (black = general, blue = personal)</div></div>
+    <div class="timeline-row"><div class="timeline-date">Mar 17</div><div class="timeline-marker dot-done"></div><div class="timeline-text"><strong>Direction Locked In</strong> — Interactive kiosk concept with wayfinding, student account, community board, notifications</div></div>
+    <div class="timeline-row"><div class="timeline-date">Mar 20</div><div class="timeline-marker dot-next"></div><div class="timeline-text"><strong>Library Field Visit</strong> — Meet with library staff, validate kiosk concept, bring research questions</div></div>
+    <div class="timeline-row"><div class="timeline-date">Mar 24</div><div class="timeline-marker dot-next"></div><div class="timeline-text"><strong>Project Update Presentation (10 Slides)</strong> — Research Retrospective (4 slides), Personas, Journey Map divider, As-Is Journey Map, Service Direction, Precedents, Early Sketches</div></div>
+    <div class="timeline-row"><div class="timeline-date">Mar 27–Apr 7</div><div class="timeline-marker dot-future"></div><div class="timeline-text"><strong>Production Days</strong> — Figma prototype, RPi kiosk build, enclosure design, storyboard</div></div>
+    <div class="timeline-row"><div class="timeline-date">Apr 10</div><div class="timeline-marker dot-future"></div><div class="timeline-text"><strong>Final Presentations</strong> — Library staff present</div></div>
+    <div class="timeline-row"><div class="timeline-date">Apr 17</div><div class="timeline-marker dot-future"></div><div class="timeline-text"><strong>Documentation Upload</strong></div></div>
   </div>
 
-  <!-- =============================== -->
-  <!-- SECTION 0                        -->
-  <!-- =============================== -->
+  <!-- ===== SECTION 0 ===== -->
   <div class="section">
-    <div class="section-head">
-      <div>
-        <div class="section-label">Section 0</div>
-        <div class="section-title">Initial Observations & Context</div>
-      </div>
-      <div class="section-status status-complete">Complete</div>
-    </div>
-    <div class="section-summary">
-      Preparatory observation notes from the Friday March 15 team session (2–3 PM). The team set up colour-coded categories: black sticky notes for general observations, blue for personal experiences. An early research question emerged: do senior students feel more comfortable asking library staff for help than foundation-year students?
-    </div>
+    <div class="section-head"><div><div class="section-label">Section 0</div><div class="section-title">Initial Observations &amp; Context</div></div><div class="section-status status-complete">Complete</div></div>
+    <div class="section-summary">Preparatory observation notes from the Friday March 15 team session (2–3 PM). The team set up colour-coded categories: black sticky notes for general observations, blue for personal experiences. An early research question emerged: do senior students feel more comfortable asking library staff for help than foundation-year students?</div>
     <div class="sticky-grid">
-      <div class="sticky team">
-        <div class="author">Team</div>
-        <div class="title">Observation Framework</div>
-        Black = General Observations, Blue = Personal Experiences. Session: Friday March 15, 2–3 PM.
-      </div>
-      <div class="sticky team">
-        <div class="author">Team</div>
-        <div class="title">Early Research Question</div>
-        Do senior students feel more comfortable asking library staff for help than foundation students? What affects comfort levels and service accessibility?
-      </div>
-      <div class="sticky jenny">
-        <div class="author">Jenny</div>
-        <div class="title">No First-Floor Entrance</div>
-        There is no entrance on the first floor, which is inconvenient. Students are required to go up to the second floor just to enter the library. Staff said this was for security reasons, but the alarm system is no longer working — people can walk out without any checks. A first-floor entrance would make the library much more accessible.
-      </div>
-      <div class="sticky jenny">
-        <div class="author">Jenny</div>
-        <div class="title">Dead Plants & Wasted Space</div>
-        There are too many plants in the area, and many of them are dead. This space could be better used for student desks and study areas instead of unnecessary decoration.
-      </div>
-      <div class="sticky jenny">
-        <div class="author">Jenny</div>
-        <div class="title">Second-Floor Wing Feels Unstable</div>
-        The second-floor wing feels unstable and is rarely used. It could be redesigned into a study space by adding desks near the glass windows, creating a more open, fresh, and inviting environment.
-      </div>
-      <div class="sticky placeholder lyon">
-        <div class="placeholder-tag">Placeholder — needs Lyon's real input</div>
-        <div class="author">Lyon</div>
-        <div class="title">Lyon's Initial Observations</div>
-        Lyon's observations from this session haven't been added yet. Max: ask Lyon to share their notes so we can include them here.
-      </div>
+      <div class="sticky team"><div class="author">Team</div><div class="title">Observation Framework</div>Black = General Observations, Blue = Personal Experiences. Session: Friday March 15, 2–3 PM.</div>
+      <div class="sticky team"><div class="author">Team</div><div class="title">Early Research Question</div>Do senior students feel more comfortable asking library staff for help than foundation students? What affects comfort levels and service accessibility?</div>
+      <div class="sticky jennie"><div class="author">Jennie</div><div class="title">No First-Floor Entrance</div>There is no entrance on the first floor, which is inconvenient. Students are required to go up to the second floor just to enter the library. Staff said this was for security reasons, but the alarm system is no longer working — people can walk out without any checks. A first-floor entrance would make the library much more accessible.</div>
+      <div class="sticky jennie"><div class="author">Jennie</div><div class="title">Dead Plants &amp; Wasted Space</div>There are too many plants in the area, and many of them are dead. This space could be better used for student desks and study areas instead of unnecessary decoration.</div>
+      <div class="sticky jennie"><div class="author">Jennie</div><div class="title">Second-Floor Wing Feels Unstable</div>The second-floor wing feels unstable and is rarely used. It could be redesigned into a study space by adding desks near the glass windows, creating a more open, fresh, and inviting environment.</div>
+      <div class="sticky placeholder lyon"><div class="placeholder-tag">Placeholder — needs Lyon's real input</div><div class="author">Lyon</div><div class="title">Lyon's Initial Observations</div>Lyon's observations from this session haven't been added yet. Max: ask Lyon to share their notes so we can include them here.</div>
     </div>
   </div>
 
-  <!-- =============================== -->
-  <!-- SECTION 1                        -->
-  <!-- =============================== -->
+  <!-- ===== SECTION 1 ===== -->
   <div class="section">
-    <div class="section-head">
-      <div>
-        <div class="section-label">Section 1</div>
-        <div class="section-title">AEIOU Framework & User Research Synthesis</div>
-      </div>
-      <div class="section-status status-complete">Complete</div>
-    </div>
-    <div class="section-summary">
-      Collaborative research synthesis using AEIOU. Covers objects (books, iMacs, printing), users (ECU students on laptops and Wacom tablets), and critical pain points. Alicia flagged that the book borrowing/return process is unclear. Jenny identified major physical accessibility issues: no first-floor entrance, dead plants wasting desk space, an unstable and underused second-floor wing, and a broken security alarm that no longer justifies the access restrictions.
-    </div>
+    <div class="section-head"><div><div class="section-label">Section 1</div><div class="section-title">AEIOU Framework &amp; User Research Synthesis</div></div><div class="section-status status-complete">Complete</div></div>
+    <div class="section-summary">Collaborative research synthesis using AEIOU. Covers objects (books, iMacs, printing), users (ECU students on laptops and Wacom tablets), and critical pain points. Alicia flagged that the book borrowing/return process is unclear. Jennie identified major physical accessibility issues: no first-floor entrance, dead plants wasting desk space, an unstable and underused second-floor wing, and a broken security alarm that no longer justifies the access restrictions.</div>
     <div class="sticky-grid">
-      <div class="sticky alicia">
-        <div class="author">Alicia</div>
-        <div class="title">Objects — Computers & Printing</div>
-        There is abundant access to iMacs for word processing and research. Computers are very accessible to any student if they need to quickly print things on the go.
-      </div>
-      <div class="sticky alicia">
-        <div class="author">Alicia</div>
-        <div class="title">Users — Who's Here</div>
-        The vast majority of users are Emily Carr students — drawing in sketchbooks, working on projects with laptops and Wacom tablets, collaborating on group projects.
-      </div>
-      <div class="sticky alicia">
-        <div class="author">Alicia</div>
-        <div class="title">Users — The Borrowing Problem</div>
-        During Foundation Year, the library felt welcoming with the large windows. But I never explored actually borrowing a book — there's no clear signage for how. The return sign is in a corner blocked by a display case. Inefficient for beginners.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Friction — Hidden Bathrooms & Elevator</div>
-        Washrooms tucked in a far corner. Nobody knows they're there. Elevator — for everyone or just accessibility? No signage. Repeated moments of hesitation.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Mystery — The Locked Room</div>
-        Adjacent to beanbags and hammock. Always locked. Rare books, maps, special collections. Never seen anyone go in. How would a student even request access?
-      </div>
-      <div class="sticky team">
-        <div class="author">Team</div>
-        <div class="title">Draft Questions for March 20</div>
-        5 questions: service discovery, special collections access, public-facing role, common front-desk requests, wayfinding gaps.
-      </div>
-      <div class="sticky jenny">
-        <div class="author">Jenny</div>
-        <div class="title">Environment — Space Could Be Better Used</div>
-        Dead plants taking up space that could be student desks. Second-floor wing rarely used and feels unstable. No first-floor entrance forces students upstairs to enter. Security alarm no longer works anyway, so the access restriction doesn't make sense anymore.
-      </div>
-      <div class="sticky jenny">
-        <div class="author">Jenny</div>
-        <div class="title">Questions for Staff</div>
-        Why no first-floor entrance — any plans to add one? What's the second-floor wing for and could it become a study area? Any plans to replace dead plants with study desks? How is security managed without the alarm? Is student feedback considered when redesigning spaces?
-      </div>
-      <div class="sticky placeholder lyon">
-        <div class="placeholder-tag">Placeholder — needs Lyon's real input</div>
-        <div class="author">Lyon</div>
-        <div class="title">Lyon's AEIOU Observations</div>
-        Lyon's safari observations and AEIOU notes haven't been added yet. Ask them to share so they can be included.
-      </div>
+      <div class="sticky alicia"><div class="author">Alicia</div><div class="title">Objects — Computers &amp; Printing</div>There is abundant access to iMacs for word processing and research. Computers are very accessible to any student if they need to quickly print things on the go.</div>
+      <div class="sticky alicia"><div class="author">Alicia</div><div class="title">Users — Who's Here</div>The vast majority of users are Emily Carr students — drawing in sketchbooks, working on projects with laptops and Wacom tablets, collaborating on group projects.</div>
+      <div class="sticky alicia"><div class="author">Alicia</div><div class="title">Users — The Borrowing Problem</div>During Foundation Year, the library felt welcoming with the large windows. But I never explored actually borrowing a book — there's no clear signage for how. The return sign is in a corner blocked by a display case. Inefficient for beginners.</div>
+      <div class="sticky max"><div class="author">Max</div><div class="title">Friction — Hidden Bathrooms &amp; Elevator</div>Bathrooms require navigating through non-obvious hallways. Elevator location is unclear. Wayfinding signage focuses on events and room booking, not spatial orientation. First-time visitors struggle with basic navigation.</div>
+      <div class="sticky max"><div class="author">Max</div><div class="title">Environment — Lower Level Is The Real Library</div>Natural light, plants (alive ones), beanbags, a hammock, compact shelving with archival film materials. Completely different energy from the transactional main floor. Students here are settled in and working, not just passing through.</div>
+      <div class="sticky max"><div class="author">Max</div><div class="title">Interactions — Staff Are Great but Desk-Bound</div>Front desk staff are friendly and approachable, but interactions are mostly operational: printing help, card loading, basic questions. Deeper research consultations seem rare. Staff are anchored — no presence on other floors.</div>
+      <div class="sticky max"><div class="author">Max</div><div class="title">Activities — Games, Swaps &amp; Hidden Services</div>Board game lending, resource swap, bookable rooms, special collections — these exist but have zero visibility. Students stumble onto them or never learn they exist. The library's best features are its most hidden.</div>
+      <div class="sticky placeholder lyon"><div class="placeholder-tag">Placeholder — needs Lyon's real input</div><div class="author">Lyon</div><div class="title">Lyon's AEIOU Observations</div>Lyon's observations haven't been added yet. Ask Lyon to share their AEIOU notes from the field session.</div>
     </div>
   </div>
 
-  <!-- =============================== -->
-  <!-- SECTION 2                        -->
-  <!-- =============================== -->
-  <div class="section">
-    <div class="section-head">
-      <div>
-        <div class="section-label">Section 2</div>
-        <div class="section-title">Max's Full Safari Write-Up</div>
-      </div>
-      <div class="section-status status-complete">Complete</div>
-    </div>
-    <div class="section-summary">
-      Max's detailed AEIOU observations from a Friday evening visit (~8 PM). Main floor functions like a print shop; lower level is where the real library experience lives. Games lending and resource swap are underused. Staff are warm but desk-bound. Space has diverse micro-environments across three floors.
-    </div>
+  <!-- ===== SECTION 4: SERVICE DIRECTION ===== -->
+  <div class="section" style="border-color: #4ade80;">
+    <div class="section-head"><div><div class="section-label">Section 4</div><div class="section-title">Service Direction — Interactive Library Kiosk</div></div><div class="section-status status-active">Active</div></div>
+    <div class="section-summary">Team-agreed direction. An interactive RPi kiosk: wayfinding + student account + community board + notifications. Physical hardware in the library with a touchscreen interface. Accessible, inclusive, community-first.</div>
     <div class="sticky-grid">
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Activities — Print Shop Energy</div>
-        iMac stations always in use. Majority of activity is printing — loading cards, troubleshooting, asking staff. Checkout desk feels like a copy-shop counter.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Activities — Lower Level = Real Library</div>
-        Downstairs people are settled in — beanbags, shared stations, cubicle maze. Different energy. People come down to stay. Main floor is transactional.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Activities — Underused Features</div>
-        Games lending and art supply resource swap both exist but see almost no traffic. Resource swap could be huge for art students but gets no attention.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Environment — Micro-Environments</div>
-        Natural-light lower level with plants & hammock. Quiet archive middle floor. Cubicle maze. Bookable rooms. Main-floor lounge with comics. Always finding new corners.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Interactions — Warm but Anchored</div>
-        Staff are friendly and approachable but always behind the front desk. No presence on lower or middle floors. Interactions are mostly operational.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Objects — More Than Books</div>
-        Plinths, mannequins for rent, bicycle pump, games, tea station, scanners, resource swap, iMacs. Compact shelving holds film canisters and archival artifacts.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Users — 8 PM Friday</div>
-        10–15 students, one public visitor with shopping bags. A couple on the beanbags. Calm vibe. Midday Wednesday would be completely different.
-      </div>
+      <div class="sticky team"><div class="author">Team</div><div class="title">The Direction</div>Interactive RPi kiosk. Wayfinding + student account + community board + notifications. Physical hardware in the library. Touchscreen interface. Accessible, inclusive, community-first.</div>
+      <div class="sticky max"><div class="author">Max</div><div class="title">Wayfinding — Indigo Chapters Style</div>Search the stacks like you'd search in a bookstore kiosk. Floor-by-floor map. See exactly where materials live. Highlight the hidden stuff — film archives, games, special collections, the resource swap.</div>
+      <div class="sticky max"><div class="author">Max</div><div class="title">Student Account Hub</div>Top up print cards. Pay tuition fees or balances. Check out and return books. Master your student account from one screen. All the stuff that currently clogs the front desk.</div>
+      <div class="sticky max"><div class="author">Max</div><div class="title">Community Board — The Big Idea</div>Student-powered bulletin board. "I want to go hiking Saturday" — post it, others join, it adds to their calendar and sends a Slack/email to interested people. Board games, movie nights, talks, study groups. Make the invisible community visible.</div>
+      <div class="sticky max"><div class="author">Max</div><div class="title">Smart Notifications</div>When you join something, it syncs to your calendar and sends blasts to people with matching interests. "3 people from your program are going to Board Game Night." Reminders before events. Interest-based filtering.</div>
+      <div class="sticky team"><div class="author">Team</div><div class="title">Design Principle — Gateway, Not a Wall</div>The kiosk doesn't replace staff or student interaction. It gives students information and confidence so they CAN engage. It bridges to people, not substitutes for them.</div>
+      <div class="sticky team"><div class="author">Team</div><div class="title">Design Principle — Voice Before Efficiency</div>We're not optimizing for speed. We're building confidence. A student who feels welcome will come back. Designed for multicultural students, foundation-year, introverts, anyone who feels unsure.</div>
+      <div class="sticky team"><div class="author">Team</div><div class="title">What This Is NOT</div>Not a self-checkout machine. Not a replacement for staff. Not something that lets students hide. It's a tool that builds confidence, surfaces community, and opens doors to connection.</div>
+      <div class="sticky jennie"><div class="author">Jennie</div><div class="title">Accessibility Is Physical Too</div>Jennie flagged that the library's physical layout creates barriers — no first-floor entrance, dead-end wings, wasted space. The kiosk should also address physical navigation, not just digital wayfinding. If students can't easily get into the building, a screen inside won't help.</div>
+      <div class="sticky placeholder lyon"><div class="placeholder-tag">Placeholder — needs Lyon's real input</div><div class="author">Lyon</div><div class="title">Lyon's Direction Thoughts</div>Lyon's input on the kiosk direction hasn't been added yet. Ask them for their perspective on the technical approach and feature priorities.</div>
+      <div class="sticky placeholder alicia"><div class="placeholder-tag">Placeholder — needs Alicia's real input</div><div class="author">Alicia</div><div class="title">Alicia's Direction Thoughts</div>Alicia's input on the kiosk direction hasn't been added yet. She flagged the borrowing problem early — how does she see the kiosk solving that?</div>
     </div>
   </div>
 
-  <!-- =============================== -->
-  <!-- SECTION 3                        -->
-  <!-- =============================== -->
-  <div class="section">
-    <div class="section-head">
-      <div>
-        <div class="section-label">Section 3</div>
-        <div class="section-title">Design Questions & Service Prompts</div>
-      </div>
-      <div class="section-status status-active">Next Up: Mar 20</div>
-    </div>
-    <div class="section-summary">
-      Refined research questions for the March 20 library staff visit. Questions cover service discovery, special collections access, public vs. student balance, front-desk interaction patterns, and wayfinding. Team is building toward the interactive kiosk concept with Prompt 2 and Prompt 3.
-    </div>
-    <div class="sticky-grid">
-      <div class="sticky team">
-        <div class="author">Team</div>
-        <div class="title">Q1 — Service Discovery</div>
-        How do students find out about games lending, resource swap, bookable rooms, special collections? Communication strategy or word of mouth?
-      </div>
-      <div class="sticky team">
-        <div class="author">Team</div>
-        <div class="title">Q2 — Locked Room Access</div>
-        What's the process for the special collections room? How often do students request? Why closed by default?
-      </div>
-      <div class="sticky team">
-        <div class="author">Team</div>
-        <div class="title">Q3 — Public vs. Student</div>
-        Main floor open to non-ECU visitors without sign-in. How does the library balance student needs with public access?
-      </div>
-      <div class="sticky team">
-        <div class="author">Team</div>
-        <div class="title">Q4 — Front Desk Patterns</div>
-        Most interactions are printing/card-loading. Representative? Are there conversations staff wish happened more?
-      </div>
-      <div class="sticky team">
-        <div class="author">Team</div>
-        <div class="title">Q5 — Wayfinding Gaps</div>
-        Signage focuses on events and room booking. Spatial orientation for basics is missing — especially for new or international students.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Prompt Preferences</div>
-        Prompt 2 (Reducing Friction in Asking for Help) and Prompt 3 (Finding Resources in the Stacks). Role: TM or VC.
-      </div>
-    </div>
-  </div>
-
-  <!-- =============================== -->
-  <!-- SECTION 4: PROJECT DIRECTION     -->
-  <!-- =============================== -->
-  <div class="section" style="border-color: #4a3a7a;">
-    <div class="section-head">
-      <div>
-        <div class="section-label">Section 4</div>
-        <div class="section-title">Project Direction — The Kiosk Concept</div>
-      </div>
-      <div class="section-status status-new">New</div>
-    </div>
-    <div class="section-summary">
-      The team has converged on a direction: an interactive Raspberry Pi kiosk that combines Indigo-style wayfinding, student account management, a community bulletin board with event creation, and smart notifications (calendar sync + Slack/email). Core principle: this is a confidence builder and community connector — not a self-service machine that replaces people.
-    </div>
-    <div class="sticky-grid">
-      <div class="sticky team">
-        <div class="author">Team</div>
-        <div class="title">Core Concept</div>
-        Interactive RPi kiosk. Wayfinding + student account + community board + notifications. Physical hardware in the library. Touchscreen interface. Accessible, inclusive, community-first.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Wayfinding — Indigo Chapters Style</div>
-        Search the stacks like you'd search in a bookstore kiosk. Floor-by-floor map. See exactly where materials live. Highlight the hidden stuff — film archives, games, special collections, the resource swap.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Student Account Hub</div>
-        Top up print cards. Pay tuition fees or balances. Check out and return books. Master your student account from one screen. All the stuff that currently clogs the front desk.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Community Board — The Big Idea</div>
-        Student-powered bulletin board. "I want to go hiking Saturday" — post it, others join, it adds to their calendar and sends a Slack/email to interested people. Board games, movie nights, talks, study groups. Make the invisible community visible.
-      </div>
-      <div class="sticky max">
-        <div class="author">Max</div>
-        <div class="title">Smart Notifications</div>
-        When you join something, it syncs to your calendar and sends blasts to people with matching interests. "3 people from your program are going to Board Game Night." Reminders before events. Interest-based filtering.
-      </div>
-      <div class="sticky team">
-        <div class="author">Team</div>
-        <div class="title">Design Principle — Gateway, Not a Wall</div>
-        The kiosk doesn't replace staff or student interaction. It gives students information and confidence so they CAN engage. It bridges to people, not substitutes for them.
-      </div>
-      <div class="sticky team">
-        <div class="author">Team</div>
-        <div class="title">Design Principle — Voice Before Efficiency</div>
-        We're not optimizing for speed. We're building confidence. A student who feels welcome will come back. Designed for multicultural students, foundation-year, introverts, anyone who feels unsure.
-      </div>
-      <div class="sticky team">
-        <div class="author">Team</div>
-        <div class="title">What This Is NOT</div>
-        Not a self-checkout machine. Not a replacement for staff. Not something that lets students hide. It's a tool that builds confidence, surfaces community, and opens doors to connection.
-      </div>
-      <div class="sticky jenny">
-        <div class="author">Jenny</div>
-        <div class="title">Accessibility Is Physical Too</div>
-        Jenny flagged that the library's physical layout creates barriers — no first-floor entrance, dead-end wings, wasted space. The kiosk should also address physical navigation, not just digital wayfinding. If students can't easily get into the building, a screen inside won't help.
-      </div>
-      <div class="sticky placeholder lyon">
-        <div class="placeholder-tag">Placeholder — needs Lyon's real input</div>
-        <div class="author">Lyon</div>
-        <div class="title">Lyon's Direction Thoughts</div>
-        Lyon's input on the kiosk direction hasn't been added yet. Ask them for their perspective on the technical approach and feature priorities.
-      </div>
-      <div class="sticky placeholder alicia">
-        <div class="placeholder-tag">Placeholder — needs Alicia's real input</div>
-        <div class="author">Alicia</div>
-        <div class="title">Alicia's Direction Thoughts</div>
-        Alicia's input on the kiosk direction hasn't been added yet. She flagged the borrowing problem early — how does she see the kiosk solving that?
-      </div>
-    </div>
-  </div>
-
-  <!-- =============================== -->
-  <!-- SECTION 5: QUESTIONS FOR FRIDAY  -->
-  <!-- =============================== -->
+  <!-- ===== SECTION 5: QUESTIONS FOR FRIDAY ===== -->
   <div class="section" style="border-color: #facc15;">
-    <div class="section-head">
-      <div>
-        <div class="section-label">Section 5</div>
-        <div class="section-title">Questions for Friday (Mar 20 Library Field Visit)</div>
-      </div>
-      <div class="section-status status-active">Prep Now</div>
-    </div>
-    <div class="section-summary">
-      These are the questions we want to bring to the library staff on Friday. A mix of our original research questions plus new ones informed by the kiosk direction and Jenny's observations about physical access. Each team member should come prepared with follow-ups in their area.
-    </div>
+    <div class="section-head"><div><div class="section-label">Section 5</div><div class="section-title">Questions for Friday (Mar 20 Library Field Visit)</div></div><div class="section-status status-active">Prep Now</div></div>
+    <div class="section-summary">These are the questions we want to bring to the library staff on Friday. A mix of our original research questions plus new ones informed by the kiosk direction and Jennie's observations about physical access. Each team member should come prepared with follow-ups in their area.</div>
     <div class="sticky-grid">
-      <div class="sticky team">
-        <div class="author">Team — Original</div>
-        <div class="title">Q1 — How do students discover services?</div>
-        Games lending, resource swap, bookable rooms, special collections — how do students find out these exist? Is there a strategy or just word of mouth?
-      </div>
-      <div class="sticky team">
-        <div class="author">Team — Original</div>
-        <div class="title">Q2 — What's the deal with the locked room?</div>
-        What's the process for accessing the special collections room? How often do students request access? Why is it closed by default?
-      </div>
-      <div class="sticky team">
-        <div class="author">Team — Original</div>
-        <div class="title">Q3 — Public vs. student access</div>
-        The main floor is open to non-ECU visitors. How does the library balance student needs with public use, especially around shared resources like computers?
-      </div>
-      <div class="sticky team">
-        <div class="author">Team — Original</div>
-        <div class="title">Q4 — What do people actually ask at the desk?</div>
-        Most interactions seem to be printing/card-loading. Is that accurate? Are there conversations staff wish happened more — like research help or material recommendations?
-      </div>
-      <div class="sticky team">
-        <div class="author">Team — Original</div>
-        <div class="title">Q5 — Wayfinding & signage plans?</div>
-        Current signage focuses on events and room booking. Any plans for better spatial orientation — bathrooms, elevator, floor layout — especially for new or international students?
-      </div>
-      <div class="sticky jenny">
-        <div class="author">Jenny — New</div>
-        <div class="title">Q6 — Why no first-floor entrance?</div>
-        Why is there no entrance on the first floor? Are there any plans to add one? The alarm system no longer works, so the original security reason seems outdated.
-      </div>
-      <div class="sticky jenny">
-        <div class="author">Jenny — New</div>
-        <div class="title">Q7 — Second-floor wing potential?</div>
-        What is the second-floor wing currently used for? Could it be redesigned as a student study area with desks near the glass windows?
-      </div>
-      <div class="sticky jenny">
-        <div class="author">Jenny — New</div>
-        <div class="title">Q8 — Dead plants / space usage</div>
-        Are there plans to improve the social area — replacing dead plants with student desks and study areas? Is student feedback considered when making these changes?
-      </div>
-      <div class="sticky max">
-        <div class="author">Max — New (Kiosk)</div>
-        <div class="title">Q9 — Would a kiosk help or hurt?</div>
-        If there was an interactive station in the library that helped students find resources, discover events, and sign up for activities — would staff see that as helpful or as something that pulls students away from the desk?
-      </div>
-      <div class="sticky max">
-        <div class="author">Max — New (Kiosk)</div>
-        <div class="title">Q10 — What do staff wish students knew?</div>
-        If you could magically make every student aware of one thing about the library, what would it be? What's the most underused service or space?
-      </div>
-      <div class="sticky max">
-        <div class="author">Max — New (Community)</div>
-        <div class="title">Q11 — Events & community building</div>
-        How does the library currently promote events like game nights and workshops? Would there be interest in students being able to create and post their own community events through the library?
-      </div>
+      <div class="sticky team"><div class="author">Team — Original</div><div class="title">Q1 — How do students discover services?</div>Games lending, resource swap, bookable rooms, special collections — how do students find out these exist? Is there a strategy or just word of mouth?</div>
+      <div class="sticky team"><div class="author">Team — Original</div><div class="title">Q2 — What's the deal with the locked room?</div>What's the process for accessing the special collections room? How often do students request access? Why is it closed by default?</div>
+      <div class="sticky team"><div class="author">Team — Original</div><div class="title">Q3 — Public vs. student access</div>The main floor is open to non-ECU visitors. How does the library balance student needs with public use, especially around shared resources like computers?</div>
+      <div class="sticky team"><div class="author">Team — Original</div><div class="title">Q4 — What do people actually ask at the desk?</div>Most interactions seem to be printing/card-loading. Is that accurate? Are there conversations staff wish happened more — like research help or material recommendations?</div>
+      <div class="sticky team"><div class="author">Team — Original</div><div class="title">Q5 — Wayfinding &amp; signage plans?</div>Current signage focuses on events and room booking. Any plans for better spatial orientation — bathrooms, elevator, floor layout — especially for new or international students?</div>
+      <div class="sticky jennie"><div class="author">Jennie — New</div><div class="title">Q6 — Why no first-floor entrance?</div>Why is there no entrance on the first floor? Are there any plans to add one? The alarm system no longer works, so the original security reason seems outdated.</div>
+      <div class="sticky jennie"><div class="author">Jennie — New</div><div class="title">Q7 — Second-floor wing potential?</div>What is the second-floor wing currently used for? Could it be redesigned as a student study area with desks near the glass windows?</div>
+      <div class="sticky jennie"><div class="author">Jennie — New</div><div class="title">Q8 — Dead plants / space usage</div>Are there plans to improve the social area — replacing dead plants with student desks and study areas? Is student feedback considered when making these changes?</div>
+      <div class="sticky max"><div class="author">Max — New (Kiosk)</div><div class="title">Q9 — Would a kiosk help or hurt?</div>If there was an interactive station in the library that helped students find resources, discover events, and sign up for activities — would staff see that as helpful or as something that pulls students away from the desk?</div>
+      <div class="sticky max"><div class="author">Max — New (Kiosk)</div><div class="title">Q10 — What do staff wish students knew?</div>If you could magically make every student aware of one thing about the library, what would it be? What's the most underused service or space?</div>
+      <div class="sticky max"><div class="author">Max — New (Community)</div><div class="title">Q11 — Events &amp; community building</div>How does the library currently promote events like game nights and workshops? Would there be interest in students being able to create and post their own community events through the library?</div>
     </div>
   </div>
 
-  <!-- =============================== -->
-  <!-- SECTION 6: TEAM CHECKLISTS       -->
-  <!-- =============================== -->
+  <!-- ===== SECTION 6: TEAM CHECKLISTS (INTERACTIVE) ===== -->
   <div class="section" style="border-color: #a78bfa; background: #1a1a30;">
-    <div class="section-head">
-      <div>
-        <div class="section-label">Section 6</div>
-        <div class="section-title">Team Checklists — What Each Person Needs to Do</div>
-      </div>
-      <div class="section-status status-new">Action Items</div>
-    </div>
-    <div class="section-summary">
-      Roles confirmed. Max = SR (Service Researcher → owns Service Design Plan), Lyon = XD (Experience Designer → owns Figma Prototype), Jenny = TM (Tangible Media Specialist → owns Physical RPi Prototype), Alicia = VC (Visual Communicator → owns Storyboard + Deck). Everyone contributes to the Mar 24 Project Update (10-slide deck).
+    <div class="section-head"><div><div class="section-label">Section 6</div><div class="section-title">Team Checklists — What Each Person Needs to Do</div></div><div class="section-status status-new">Action Items</div></div>
+    <div class="section-summary">Roles confirmed. Max = SR (Service Researcher), Lyon = XD (Experience Designer), Jennie = TM (Tangible Media Specialist), Alicia = VC (Visual Communicator). Everyone contributes to the Mar 24 Project Update (10-slide deck). Click checkboxes to track progress — syncs for all viewers.</div>
+
+    <!-- TEAM PROGRESS BAR -->
+    <div class="progress-bar-wrap">
+      <div class="progress-label"><span>Overall Team Progress</span><span id="progressPct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     </div>
 
     <!-- MAR 24 PRESENTATION STRUCTURE -->
@@ -1048,55 +703,53 @@
       <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:0.6rem; font-size:0.78rem; line-height:1.6; color:#b0b0c8;">
         <div>
           <div style="color:#fff; font-weight:600;">Slide 1 — Title</div>
-          <div>&#9744; Team name, members, service challenges</div>
+          <div><span class="cb" data-id="pres-s1" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Team name, members, service challenges</span></span></div>
           <div style="color:#fff; font-weight:600; margin-top:0.4rem;">Slides 2–5 — Research Retrospective</div>
-          <div>&#9744; Slide 2: Safari + AEIOU field notes</div>
-          <div>&#9744; Slide 3: Affinity map + clustered insights</div>
-          <div>&#9744; Slide 4: Library visit questions + key quotes</div>
-          <div>&#9744; Slide 5: Key research insights</div>
+          <div><span class="cb" data-id="pres-s2" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slide 2: Safari + AEIOU field notes</span></span></div>
+          <div><span class="cb" data-id="pres-s3" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slide 3: Affinity map + clustered insights</span></span></div>
+          <div><span class="cb" data-id="pres-s4" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slide 4: Library visit questions + key quotes</span></span></div>
+          <div><span class="cb" data-id="pres-s5" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slide 5: Key research insights</span></span></div>
         </div>
         <div>
           <div style="color:#fff; font-weight:600;">Slide 6 — Personas</div>
-          <div>&#9744; 1+ personas (user and/or stakeholder), convergence/divergence</div>
+          <div><span class="cb" data-id="pres-s6" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">1+ personas (user and/or stakeholder)</span></span></div>
           <div style="color:#fff; font-weight:600; margin-top:0.4rem;">Slide 7 — As-Is Journey Map</div>
-          <div>&#9744; Full map: Stages / Actions / Thoughts / Emotions / Touchpoints</div>
+          <div><span class="cb" data-id="pres-s7" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Full map: Stages / Actions / Thoughts / Emotions / Touchpoints</span></span></div>
         </div>
         <div>
           <div style="color:#fff; font-weight:600;">Slide 8 — Service Direction</div>
-          <div>&#9744; Problem (1 sentence), proposed intervention, where in journey</div>
+          <div><span class="cb" data-id="pres-s8" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Problem (1 sentence), proposed intervention</span></span></div>
           <div style="color:#fff; font-weight:600; margin-top:0.4rem;">Slide 9 — Precedents</div>
-          <div>&#9744; 3–4 relevant design project examples that inspire</div>
+          <div><span class="cb" data-id="pres-s9" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">3–4 relevant design project examples</span></span></div>
           <div style="color:#fff; font-weight:600; margin-top:0.4rem;">Slide 10 — Early Sketches</div>
-          <div>&#9744; Storyboards and/or concept sketches (rough is fine)</div>
+          <div><span class="cb" data-id="pres-s10" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Storyboards and/or concept sketches</span></span></div>
         </div>
       </div>
     </div>
 
+    <!-- INDIVIDUAL CARDS -->
     <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.2rem;">
 
       <!-- MAX -->
       <div style="background:#16162e; border-radius:8px; padding:1.2rem; border-top: 4px solid #fff3b0;">
         <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
           <div style="width:28px; height:28px; background:#fff3b0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; color:#1a1a2e;">M</div>
-          <div>
-            <div style="font-size:0.9rem; font-weight:600; color:#fff;">Max <span style="font-size:0.7rem; color:#4ade80;">SR</span></div>
-            <div style="font-size:0.65rem; color:#8a8aa0;">Service Researcher — Owns: Service Design Plan</div>
-          </div>
+          <div><div style="font-size:0.9rem; font-weight:600; color:#fff;">Max <span style="font-size:0.7rem; color:#4ade80;">SR</span></div><div style="font-size:0.65rem; color:#8a8aa0;">Service Researcher — Owns: Service Design Plan</div></div>
         </div>
         <div style="font-size:0.78rem; line-height:1.8; color:#b0b0c8;">
           <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:#facc15; font-weight:700; margin-bottom:0.3rem;">This Week</div>
-          <div style="margin-bottom:0.2rem;">&#9745; Complete AEIOU observations write-up</div>
-          <div style="margin-bottom:0.2rem;">&#9745; Draft 5 research questions for Friday</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Post safari homework to Moodle</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Attend library field visit (Mar 20) — lead interview questions</div>
+          <div><span class="cb checked" data-id="max-aeiou" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Complete AEIOU observations write-up</span></span></div>
+          <div><span class="cb checked" data-id="max-research-qs" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Draft 5 research questions for Friday</span></span></div>
+          <div><span class="cb" data-id="max-safari-moodle" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Post safari homework to Moodle</span></span></div>
+          <div><span class="cb" data-id="max-field-visit" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Attend library field visit (Mar 20) — lead interview questions</span></span></div>
           <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:#facc15; font-weight:700; margin-top:0.5rem; margin-bottom:0.3rem;">Mar 24 Presentation (SR Leads)</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Slides 2–5: Research Retrospective — compile all AEIOU data, affinity map, field visit quotes, key insights</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Slide 6: Persona(s) — draft at least 1 user persona from research</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Slide 7: As-Is Journey Map — stages, actions, thoughts, emotions, touchpoints</div>
+          <div><span class="cb" data-id="max-slides-2-5" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slides 2–5: Research Retro — compile AEIOU, affinity map, visit quotes, insights</span></span></div>
+          <div><span class="cb" data-id="max-slide-6" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slide 6: Personas — draft at least 1 user persona</span></span></div>
+          <div><span class="cb" data-id="max-slide-7" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slide 7: As-Is Journey Map — stages, actions, thoughts, emotions, touchpoints</span></span></div>
           <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:#6a6a8a; font-weight:700; margin-top:0.5rem; margin-bottom:0.3rem;">Production (Mar 27–Apr 7)</div>
-          <div style="margin-bottom:0.2rem; color:#6a6a8a;">&#9744; Own the Service Design Plan document</div>
-          <div style="margin-bottom:0.2rem; color:#6a6a8a;">&#9744; Field research, interviews, persona refinement, synthesis</div>
-          <div style="margin-bottom:0.2rem; color:#6a6a8a;">&#9744; Final presentation (Apr 10) + documentation (Apr 17)</div>
+          <div><span class="cb" data-id="max-prod-plan" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;">Own the Service Design Plan document</span></span></div>
+          <div><span class="cb" data-id="max-prod-research" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;">Field research, interviews, persona refinement, synthesis</span></span></div>
+          <div><span class="cb" data-id="max-prod-final" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;">Final presentation (Apr 10) + documentation (Apr 17)</span></span></div>
         </div>
       </div>
 
@@ -1104,46 +757,40 @@
       <div style="background:#16162e; border-radius:8px; padding:1.2rem; border-top: 4px solid #b8d4f0;">
         <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
           <div style="width:28px; height:28px; background:#b8d4f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; color:#1a1a2e;">L</div>
-          <div>
-            <div style="font-size:0.9rem; font-weight:600; color:#fff;">Lyon <span style="font-size:0.7rem; color:#60a5fa;">XD</span></div>
-            <div style="font-size:0.65rem; color:#8a8aa0;">Experience Designer — Owns: Figma Prototype</div>
-          </div>
+          <div><div style="font-size:0.9rem; font-weight:600; color:#fff;">Lyon <span style="font-size:0.7rem; color:#60a5fa;">XD</span></div><div style="font-size:0.65rem; color:#8a8aa0;">Experience Designer — Owns: Figma Prototype</div></div>
         </div>
         <div style="font-size:0.78rem; line-height:1.8; color:#b0b0c8;">
           <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:#facc15; font-weight:700; margin-bottom:0.3rem;">This Week</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Post safari observations to Miro board</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Post safari homework to Moodle</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Attend library field visit (Mar 20)</div>
+          <div><span class="cb" data-id="lyon-safari-miro" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Post safari observations to Miro board</span></span></div>
+          <div><span class="cb" data-id="lyon-safari-moodle" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Post safari homework to Moodle</span></span></div>
+          <div><span class="cb" data-id="lyon-field-visit" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Attend library field visit (Mar 20)</span></span></div>
           <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:#facc15; font-weight:700; margin-top:0.5rem; margin-bottom:0.3rem;">Mar 24 Presentation (XD Leads)</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Slide 10: Early Sketches — initial UI wireframes / concept sketches for kiosk screens</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Contribute to Slide 8: Service Direction — show where digital touchpoint sits in the journey</div>
+          <div><span class="cb" data-id="lyon-slide-10" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slide 10: Early Sketches — initial UI wireframes / concept sketches</span></span></div>
+          <div><span class="cb" data-id="lyon-slide-8" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Contribute to Slide 8: Service Direction — digital touchpoint in journey</span></span></div>
           <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:#6a6a8a; font-weight:700; margin-top:0.5rem; margin-bottom:0.3rem;">Production (Mar 27–Apr 7)</div>
-          <div style="margin-bottom:0.2rem; color:#6a6a8a;">&#9744; Own the Figma Prototype — digital touchpoints, UI flows, interaction design</div>
-          <div style="margin-bottom:0.2rem; color:#6a6a8a;">&#9744; Final presentation (Apr 10) + documentation (Apr 17)</div>
+          <div><span class="cb" data-id="lyon-prod-figma" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;">Own the Figma Prototype — digital touchpoints, UI flows, interaction design</span></span></div>
+          <div><span class="cb" data-id="lyon-prod-final" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;">Final presentation (Apr 10) + documentation (Apr 17)</span></span></div>
         </div>
       </div>
 
-      <!-- JENNY -->
+      <!-- JENNIE -->
       <div style="background:#16162e; border-radius:8px; padding:1.2rem; border-top: 4px solid #f0c4d4;">
         <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
           <div style="width:28px; height:28px; background:#f0c4d4; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; color:#1a1a2e;">J</div>
-          <div>
-            <div style="font-size:0.9rem; font-weight:600; color:#fff;">Jenny <span style="font-size:0.7rem; color:#fb923c;">TM</span></div>
-            <div style="font-size:0.65rem; color:#8a8aa0;">Tangible Media Specialist — Owns: Physical RPi Prototype</div>
-          </div>
+          <div><div style="font-size:0.9rem; font-weight:600; color:#fff;">Jennie <span style="font-size:0.7rem; color:#fb923c;">TM</span></div><div style="font-size:0.65rem; color:#8a8aa0;">Tangible Media Specialist — Owns: Physical RPi Prototype</div></div>
         </div>
         <div style="font-size:0.78rem; line-height:1.8; color:#b0b0c8;">
           <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:#facc15; font-weight:700; margin-bottom:0.3rem;">This Week</div>
-          <div style="margin-bottom:0.2rem;">&#9745; Complete safari observations (notes + questions on Miro)</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Post safari homework to Moodle</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Prepare follow-up questions on physical access (Q6–Q8) for Friday</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Attend library field visit (Mar 20)</div>
+          <div><span class="cb checked" data-id="jennie-safari" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Complete safari observations (notes + questions on Miro)</span></span></div>
+          <div><span class="cb" data-id="jennie-safari-moodle" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Post safari homework to Moodle</span></span></div>
+          <div><span class="cb" data-id="jennie-questions" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Prepare follow-up questions on physical access (Q6–Q8) for Friday</span></span></div>
+          <div><span class="cb" data-id="jennie-field-visit" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Attend library field visit (Mar 20)</span></span></div>
           <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:#facc15; font-weight:700; margin-top:0.5rem; margin-bottom:0.3rem;">Mar 24 Presentation (TM Leads)</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Slide 10: Early Sketches — RPi hardware concept, enclosure rough sketches, physical form factor</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Slide 9: Precedents — research 2 physical kiosk/hardware precedents</div>
+          <div><span class="cb" data-id="jennie-slide-10" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slide 10: Early Sketches — RPi hardware concept, enclosure rough sketches</span></span></div>
+          <div><span class="cb" data-id="jennie-slide-9" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slide 9: Precedents — research 2 physical kiosk/hardware precedents</span></span></div>
           <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:#6a6a8a; font-weight:700; margin-top:0.5rem; margin-bottom:0.3rem;">Production (Mar 27–Apr 7)</div>
-          <div style="margin-bottom:0.2rem; color:#6a6a8a;">&#9744; Own the Physical RPi Prototype — hardware build, enclosure design</div>
-          <div style="margin-bottom:0.2rem; color:#6a6a8a;">&#9744; Final presentation (Apr 10) + documentation (Apr 17)</div>
+          <div><span class="cb" data-id="jennie-prod-rpi" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;">Own the Physical RPi Prototype — hardware build, enclosure design</span></span></div>
+          <div><span class="cb" data-id="jennie-prod-final" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;">Final presentation (Apr 10) + documentation (Apr 17)</span></span></div>
         </div>
       </div>
 
@@ -1151,25 +798,22 @@
       <div style="background:#16162e; border-radius:8px; padding:1.2rem; border-top: 4px solid #b8e6d0;">
         <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
           <div style="width:28px; height:28px; background:#b8e6d0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; color:#1a1a2e;">A</div>
-          <div>
-            <div style="font-size:0.9rem; font-weight:600; color:#fff;">Alicia <span style="font-size:0.7rem; color:#a78bfa;">VC</span></div>
-            <div style="font-size:0.65rem; color:#8a8aa0;">Visual Communicator — Owns: Storyboard + Deck</div>
-          </div>
+          <div><div style="font-size:0.9rem; font-weight:600; color:#fff;">Alicia <span style="font-size:0.7rem; color:#a78bfa;">VC</span></div><div style="font-size:0.65rem; color:#8a8aa0;">Visual Communicator — Owns: Storyboard + Deck</div></div>
         </div>
         <div style="font-size:0.78rem; line-height:1.8; color:#b0b0c8;">
           <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:#facc15; font-weight:700; margin-bottom:0.3rem;">This Week</div>
-          <div style="margin-bottom:0.2rem;">&#9745; Complete AEIOU observations (objects, users, borrowing problem)</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Post safari homework to Moodle</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Prepare follow-up questions on borrowing system for Friday</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Attend library field visit (Mar 20)</div>
+          <div><span class="cb checked" data-id="alicia-aeiou" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Complete AEIOU observations (objects, users, borrowing problem)</span></span></div>
+          <div><span class="cb" data-id="alicia-safari-moodle" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Post safari homework to Moodle</span></span></div>
+          <div><span class="cb" data-id="alicia-questions" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Prepare follow-up questions on borrowing system for Friday</span></span></div>
+          <div><span class="cb" data-id="alicia-field-visit" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Attend library field visit (Mar 20)</span></span></div>
           <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:#facc15; font-weight:700; margin-top:0.5rem; margin-bottom:0.3rem;">Mar 24 Presentation (VC Leads)</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Slide 1: Title slide design + visual system for the deck</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Slide 8: Service Direction — one-slide visual summary of the kiosk concept</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Slide 9: Precedents — research 2 service design / visual precedents</div>
-          <div style="margin-bottom:0.2rem;">&#9744; Own the overall deck layout, visual consistency, and storyboard panels</div>
+          <div><span class="cb" data-id="alicia-slide-1" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slide 1: Title slide design + visual system for the deck</span></span></div>
+          <div><span class="cb" data-id="alicia-slide-8" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slide 8: Service Direction — one-slide visual summary of kiosk concept</span></span></div>
+          <div><span class="cb" data-id="alicia-slide-9" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Slide 9: Precedents — research 2 service design / visual precedents</span></span></div>
+          <div><span class="cb" data-id="alicia-deck" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Own the overall deck layout, visual consistency, and storyboard panels</span></span></div>
           <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:#6a6a8a; font-weight:700; margin-top:0.5rem; margin-bottom:0.3rem;">Production (Mar 27–Apr 7)</div>
-          <div style="margin-bottom:0.2rem; color:#6a6a8a;">&#9744; Own the Storyboard + Final Deck — scenario narrative, storyboard panels, visual system</div>
-          <div style="margin-bottom:0.2rem; color:#6a6a8a;">&#9744; Final presentation (Apr 10) + documentation (Apr 17)</div>
+          <div><span class="cb" data-id="alicia-prod-storyboard" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;">Own the Storyboard + Final Deck — narrative, panels, visual system</span></span></div>
+          <div><span class="cb" data-id="alicia-prod-final" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;">Final presentation (Apr 10) + documentation (Apr 17)</span></span></div>
         </div>
       </div>
 
@@ -1179,41 +823,228 @@
     <div style="background:#16162e; border-radius:8px; padding:1.2rem; margin-top:1.2rem; border-top: 4px solid #d8d0f0;">
       <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
         <div style="width:28px; height:28px; background:#d8d0f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; color:#1a1a2e;">T2</div>
-        <div>
-          <div style="font-size:0.9rem; font-weight:600; color:#fff;">Team — Shared Responsibilities</div>
-          <div style="font-size:0.65rem; color:#8a8aa0;">Everyone is accountable for these</div>
-        </div>
+        <div><div style="font-size:0.9rem; font-weight:600; color:#fff;">Team — Shared Responsibilities</div><div style="font-size:0.65rem; color:#8a8aa0;">Everyone is accountable for these</div></div>
       </div>
       <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:1rem; font-size:0.8rem; line-height:1.8; color:#b0b0c8;">
         <div>
           <div style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1.5px; color:#8a80a0; font-weight:700; margin-bottom:0.4rem;">Before Friday (Mar 20)</div>
-          <div>&#9744; Finalize question list as a team — combine originals + new ones</div>
-          <div>&#9744; Agree on who asks what during the visit</div>
-          <div>&#9744; Everyone posts individual safari homework to Moodle</div>
-          <div>&#9745; Lock in team roles (SR, XD, TM, VC)</div>
+          <div><span class="cb" data-id="team-finalize-qs" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Finalize question list as a team</span></span></div>
+          <div><span class="cb" data-id="team-interview-roles" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Agree on who asks what during the visit</span></span></div>
+          <div><span class="cb" data-id="team-moodle" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Everyone posts individual safari homework to Moodle</span></span></div>
+          <div><span class="cb checked" data-id="team-roles" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Lock in team roles (SR, XD, TM, VC)</span></span></div>
         </div>
         <div>
           <div style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1.5px; color:#f87171; font-weight:700; margin-bottom:0.4rem;">Mar 24 Project Update — 10 Slides</div>
-          <div>&#9744; <strong>Max (SR):</strong> Slides 2–7 (Research Retro, Personas, Journey Map)</div>
-          <div>&#9744; <strong>Alicia (VC):</strong> Slide 1 (Title), Slide 8 (Direction), Slide 9 (Precedents), deck visuals</div>
-          <div>&#9744; <strong>Lyon (XD):</strong> Slide 10 (Early Sketches — UI wireframes)</div>
-          <div>&#9744; <strong>Jenny (TM):</strong> Slide 10 (Early Sketches — hardware), Slide 9 (Precedents — hardware)</div>
-          <div>&#9744; Team review + dry run before March 24</div>
+          <div><span class="cb" data-id="team-mar24-max" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label"><strong>Max (SR):</strong> Slides 2–7 (Research, Personas, Journey Map)</span></span></div>
+          <div><span class="cb" data-id="team-mar24-alicia" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label"><strong>Alicia (VC):</strong> Slide 1, 8, 9 + deck visuals</span></span></div>
+          <div><span class="cb" data-id="team-mar24-lyon" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label"><strong>Lyon (XD):</strong> Slide 10 (UI wireframes)</span></span></div>
+          <div><span class="cb" data-id="team-mar24-jennie" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label"><strong>Jennie (TM):</strong> Slide 10 (hardware) + Slide 9 (precedents)</span></span></div>
+          <div><span class="cb" data-id="team-dry-run" onclick="toggle(this)"><span class="cb-box"></span> <span class="cb-label">Team review + dry run before March 24</span></span></div>
         </div>
         <div>
           <div style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1.5px; color:#8a80a0; font-weight:700; margin-bottom:0.4rem;">4 Final Deliverables (Apr 10)</div>
-          <div>&#9744; <strong>Max (SR):</strong> Service Design Plan</div>
-          <div>&#9744; <strong>Lyon (XD):</strong> Figma Prototype</div>
-          <div>&#9744; <strong>Jenny (TM):</strong> Physical RPi Prototype</div>
-          <div>&#9744; <strong>Alicia (VC):</strong> Storyboard + Presentation Deck</div>
+          <div><span class="cb" data-id="team-del-max" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;"><strong>Max (SR):</strong> Service Design Plan</span></span></div>
+          <div><span class="cb" data-id="team-del-lyon" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;"><strong>Lyon (XD):</strong> Figma Prototype</span></span></div>
+          <div><span class="cb" data-id="team-del-jennie" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;"><strong>Jennie (TM):</strong> Physical RPi Prototype</span></span></div>
+          <div><span class="cb" data-id="team-del-alicia" onclick="toggle(this)"><span class="cb-box cb-box-dim"></span> <span class="cb-label" style="color:#6a6a8a;"><strong>Alicia (VC):</strong> Storyboard + Presentation Deck</span></span></div>
           <div style="margin-top:0.4rem; font-size:0.7rem; color:#6a6a8a;">All deliverables must use an interactive touchscreen device prototyped with Raspberry Pi.</div>
         </div>
       </div>
     </div>
 
-  </div>
+  </div><!-- end section 6 -->
 
-</div>
+  </div><!-- end board -->
+</div><!-- end tab-dashboard -->
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT — Firebase + localStorage sync     -->
+<!-- ============================================ -->
+<script>
+// ==========================================
+// FIREBASE CONFIG — Fill these in for real-time sync
+// ==========================================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBRg5STfMMCm_S5eXQRCZMtgBD-9K3zTB0",
+  authDomain: "ecuad-library-service-design.firebaseapp.com",
+  databaseURL: "https://ecuad-library-service-design-default-rtdb.firebaseio.com",
+  projectId: "ecuad-library-service-design",
+  storageBucket: "ecuad-library-service-design.firebasestorage.app",
+  messagingSenderId: "1004172380430",
+  appId: "1:1004172380430:web:66717973aa24134133ef5f"
+};
+
+const USE_FIREBASE = FIREBASE_CONFIG.databaseURL !== "";
+let db = null;
+
+if (USE_FIREBASE) {
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.database();
+    document.getElementById('syncLabel').textContent = 'Live sync';
+    document.getElementById('syncStatus').classList.remove('offline');
+  } catch(e) {
+    console.warn('Firebase init failed, using localStorage', e);
+  }
+} else {
+  document.getElementById('syncStatus').classList.add('offline');
+}
+
+// ==========================================
+// IDENTITY
+// ==========================================
+let currentUser = localStorage.getItem('t2-identity') || '';
+
+function setIdentity(name) {
+  currentUser = name;
+  localStorage.setItem('t2-identity', name);
+  document.querySelectorAll('.id-btn').forEach(b => {
+    b.className = 'id-btn';
+    if (b.dataset.name === name) b.classList.add('active-' + name.toLowerCase());
+  });
+}
+
+// Restore identity on load
+if (currentUser) setIdentity(currentUser);
+
+// ==========================================
+// SETUP BANNER
+// ==========================================
+if (localStorage.getItem('dismissSetup') === '1' || USE_FIREBASE) {
+  document.getElementById('setupBanner').style.display = 'none';
+}
+
+// ==========================================
+// TABS
+// ==========================================
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'updates') {
+    document.getElementById('updateBadge').style.display = 'none';
+  }
+}
+
+// ==========================================
+// CHECKBOX LOGIC
+// ==========================================
+const STORAGE_KEY = 't2-checkboxes';
+
+function getState() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+}
+
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (USE_FIREBASE && db) db.ref('checkboxes').set(state);
+  updateProgress();
+}
+
+function toggle(el) {
+  el.classList.toggle('checked');
+  const id = el.dataset.id;
+  const state = getState();
+  state[id] = el.classList.contains('checked');
+  saveState(state);
+}
+
+function applyState(state) {
+  document.querySelectorAll('.cb[data-id]').forEach(el => {
+    const id = el.dataset.id;
+    if (state[id]) {
+      el.classList.add('checked');
+    } else if (state[id] === false) {
+      el.classList.remove('checked');
+    }
+  });
+  updateProgress();
+}
+
+function updateProgress() {
+  const all = document.querySelectorAll('.cb[data-id]');
+  const checked = document.querySelectorAll('.cb.checked[data-id]');
+  const pct = all.length ? Math.round((checked.length / all.length) * 100) : 0;
+  const pctEl = document.getElementById('progressPct');
+  const fillEl = document.getElementById('progressFill');
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (fillEl) fillEl.style.width = pct + '%';
+}
+
+// Initialize checkboxes from stored state
+const initialState = getState();
+// Set defaults for pre-checked items
+const defaults = { 'max-aeiou': true, 'max-research-qs': true, 'jennie-safari': true, 'alicia-aeiou': true, 'team-roles': true };
+let needsSave = false;
+for (const [k, v] of Object.entries(defaults)) {
+  if (initialState[k] === undefined) { initialState[k] = v; needsSave = true; }
+}
+if (needsSave) saveState(initialState);
+applyState(initialState);
+
+// Firebase real-time listener
+if (USE_FIREBASE && db) {
+  db.ref('checkboxes').on('value', snap => {
+    const data = snap.val() || {};
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    applyState(data);
+  });
+}
+
+// ==========================================
+// UPDATE READ RECEIPTS
+// ==========================================
+const READ_KEY = 't2-reads';
+
+function getReads() {
+  try { return JSON.parse(localStorage.getItem(READ_KEY) || '{}'); } catch { return {}; }
+}
+
+function saveReads(reads) {
+  localStorage.setItem(READ_KEY, JSON.stringify(reads));
+  if (USE_FIREBASE && db) db.ref('reads').set(reads);
+}
+
+function markRead(updateId, reader) {
+  if (!currentUser) { alert('Please select your name at the top first!'); return; }
+  if (currentUser !== reader) { alert('You can only mark your own read receipt. Select "' + reader + '" in the identity bar if that\'s you.'); return; }
+  const reads = getReads();
+  if (!reads[updateId]) reads[updateId] = {};
+  reads[updateId][reader] = true;
+  saveReads(reads);
+  applyReads(reads);
+}
+
+function applyReads(reads) {
+  document.querySelectorAll('.read-btn[data-update]').forEach(btn => {
+    const uid = btn.dataset.update;
+    const reader = btn.dataset.reader;
+    if (reads[uid] && reads[uid][reader]) {
+      btn.classList.add('read');
+      btn.querySelector('.read-check').innerHTML = '&#9745;';
+    } else {
+      btn.classList.remove('read');
+      btn.querySelector('.read-check').innerHTML = '&#9744;';
+    }
+  });
+  // Update badge
+  const unread = !currentUser || !(reads['update-001'] && reads['update-001'][currentUser]);
+  document.getElementById('updateBadge').style.display = unread ? '' : 'none';
+}
+
+// Initialize reads
+applyReads(getReads());
+
+// Firebase listener for reads
+if (USE_FIREBASE && db) {
+  db.ref('reads').on('value', snap => {
+    const data = snap.val() || {};
+    localStorage.setItem(READ_KEY, JSON.stringify(data));
+    applyReads(data);
+  });
+}
+</script>
 
 </body>
 </html>
