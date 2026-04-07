@@ -103,6 +103,32 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
 .map-zone{border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;text-align:center;line-height:1.3;padding:4px;transition:all .3s;white-space:pre-line;overflow:hidden;min-width:0;min-height:0}
 .map-zone.highlight{animation:pulse 1.5s ease infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(242,0,130,.3)}50%{box-shadow:0 0 0 8px rgba(242,0,130,0)}}
+@keyframes typeDot{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+
+/* Wayfinding */
+.wf-step{display:none;flex-direction:column;flex:1;overflow:hidden}
+.wf-step.active{display:flex}
+.wf-hero{padding:16px 20px;display:flex;align-items:center;gap:16px}
+.wf-progress{display:flex;gap:4px;padding:0 20px 8px}
+.wf-progress .wp{flex:1;height:3px;border-radius:2px;background:var(--glass2);transition:all .3s}
+.wf-progress .wp.done{background:var(--mag)}
+.wf-progress .wp.current{background:var(--mag);box-shadow:0 0 6px rgba(242,0,130,.5)}
+.wf-map{flex:1;position:relative;margin:0 16px 8px;border-radius:var(--r2);overflow:hidden}
+.wf-map .map-grid{position:absolute;inset:0}
+.wf-route{position:absolute;inset:0;pointer-events:none;z-index:5}
+.wf-arrow{position:absolute;width:24px;height:24px;display:flex;align-items:center;justify-content:center;animation:arrowBounce 1.2s ease infinite}
+@keyframes arrowBounce{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.2);opacity:1}}
+.wf-shelf{display:flex;gap:3px;padding:0 20px;flex:1;min-height:0}
+.wf-section{flex:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:600;border:2px solid transparent;transition:all .3s}
+.wf-section.target{border-color:var(--mag);background:rgba(242,0,130,.15);box-shadow:0 0 16px rgba(242,0,130,.3)}
+.wf-books{display:flex;gap:2px;padding:0 20px;flex:1;align-items:flex-end;min-height:0}
+.wf-book{flex:1;border-radius:3px 3px 0 0;transition:all .3s;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;font-size:7px;font-weight:700}
+.wf-book.target{box-shadow:0 0 12px rgba(242,0,130,.5);border:2px solid var(--mag);z-index:2}
+@keyframes shelfGlow{0%,100%{box-shadow:0 0 8px rgba(242,0,130,.3)}50%{box-shadow:0 0 20px rgba(242,0,130,.6)}}
+.wf-book.target{animation:shelfGlow 1.5s ease infinite}
+.wf-callnum{font-size:28px;font-weight:800;letter-spacing:2px;text-align:center;color:var(--mag);text-shadow:0 0 24px rgba(242,0,130,.4)}
+.wf-instruction{font-size:13px;font-weight:600;text-align:center;color:var(--txt2)}
+.wf-loc-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:var(--r3);background:rgba(242,0,130,.12);border:1px solid rgba(242,0,130,.25)}
 
 /* Keyboard hint */
 .kbd{display:inline-flex;padding:2px 6px;background:var(--glass2);border:1px solid var(--border);border-radius:4px;font-size:10px;font-weight:600;color:var(--txt3)}
@@ -244,7 +270,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
   <div class="bottomnav">
     <div class="nav-item active" onclick="showScreen('dashboard')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2L3 9v11h6v-5h6v5h6V9L12 2Z"/></svg></span>Home</div>
     <div class="nav-item" onclick="showScreen('search')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="11" cy="11" r="8"/><path d="M20 20l-4.35-4.35"/></svg></span>Search</div>
-    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M4 4c0-1 2-2 4-2s4 1 4 2m8-2c2 0 4 1 4 2M8 2v18m8-18v18M3 9l8-2 4 2 8-2M3 15l8 2 4-2 8 2"/></svg></span>Map</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></span>Find</div>
     <div class="nav-item" onclick="showScreen('community')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M9 3h6v2H9V3zm-6 2h18v14H3V5zm2 2h14v1H5V7zm0 3h14v1H5v-1zm0 3h14v1H5v-1z"/></svg></span>Board</div>
     <div class="nav-item" onclick="showScreen('account')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg></span>Account</div>
   </div>
@@ -322,7 +348,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
   <div class="bottomnav">
     <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2L3 9v11h6v-5h6v5h6V9L12 2Z"/></svg></span>Home</div>
     <div class="nav-item active" onclick="showScreen('search')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="11" cy="11" r="8"/><path d="M20 20l-4.35-4.35"/></svg></span>Search</div>
-    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M4 4c0-1 2-2 4-2s4 1 4 2m8-2c2 0 4 1 4 2M8 2v18m8-18v18M3 9l8-2 4 2 8-2M3 15l8 2 4-2 8 2"/></svg></span>Map</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></span>Find</div>
     <div class="nav-item" onclick="showScreen('community')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M9 3h6v2H9V3zm-6 2h18v14H3V5zm2 2h14v1H5V7zm0 3h14v1H5v-1zm0 3h14v1H5v-1z"/></svg></span>Board</div>
     <div class="nav-item" onclick="showScreen('account')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg></span>Account</div>
   </div>
@@ -339,7 +365,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
   <div class="bottomnav">
     <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2L3 9v11h6v-5h6v5h6V9L12 2Z"/></svg></span>Home</div>
     <div class="nav-item active"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="11" cy="11" r="8"/><path d="M20 20l-4.35-4.35"/></svg></span>Search</div>
-    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M4 4c0-1 2-2 4-2s4 1 4 2m8-2c2 0 4 1 4 2M8 2v18m8-18v18M3 9l8-2 4 2 8-2M3 15l8 2 4-2 8 2"/></svg></span>Map</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></span>Find</div>
     <div class="nav-item" onclick="showScreen('community')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M9 3h6v2H9V3zm-6 2h18v14H3V5zm2 2h14v1H5V7zm0 3h14v1H5v-1zm0 3h14v1H5v-1z"/></svg></span>Board</div>
     <div class="nav-item" onclick="showScreen('account')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg></span>Account</div>
   </div>
@@ -366,7 +392,10 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
     </div>
     <div style="padding:0 20px;display:flex;gap:8px">
       <button class="btn btn-primary btn-sm" style="flex:1" onclick="showScreen('success')">Check Out</button>
-      <button class="btn btn-glass btn-sm" style="flex:1" onclick="showScreen('map');highlightZone('B2')">Find on Map</button>
+      <button class="btn btn-glass btn-sm" style="flex:1" onclick="startWayfinding('The Design of Everyday Things','Don Norman','NK1510 .N67 2013',2,'B2')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        Find on Map
+      </button>
     </div>
     <div style="padding:16px 20px">
       <div class="section-title">About This Book</div>
@@ -386,50 +415,140 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
   <div class="bottomnav">
     <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2L3 9v11h6v-5h6v5h6V9L12 2Z"/></svg></span>Home</div>
     <div class="nav-item" onclick="showScreen('search')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="11" cy="11" r="8"/><path d="M20 20l-4.35-4.35"/></svg></span>Search</div>
-    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M4 4c0-1 2-2 4-2s4 1 4 2m8-2c2 0 4 1 4 2M8 2v18m8-18v18M3 9l8-2 4 2 8-2M3 15l8 2 4-2 8 2"/></svg></span>Map</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></span>Find</div>
     <div class="nav-item" onclick="showScreen('community')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M9 3h6v2H9V3zm-6 2h18v14H3V5zm2 2h14v1H5V7zm0 3h14v1H5v-1zm0 3h14v1H5v-1z"/></svg></span>Board</div>
     <div class="nav-item" onclick="showScreen('account')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg></span>Account</div>
   </div>
 </div>
 
-<!-- ========== MAP ========== -->
+<!-- ========== WAYFINDING / MAP ========== -->
 <div class="screen" id="s-map">
-  <div class="topbar">
-    <div class="logo">ECU <span>Library</span> — Floor Map</div>
-    <div class="topbar-icons">
-      <div class="topbar-icon" onclick="showScreen('dashboard')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M5 5l14 14M19 5L5 19"/></svg></div>
+  <div class="back-header" onclick="goBack('dashboard')">
+    <span class="back-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></span>
+    <span class="back-title" id="wf-title">Wayfinding</span>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <span class="tag tag-mag text-xs" id="wf-floor-tag">2nd Floor</span>
     </div>
   </div>
-  <div class="tabs">
-    <div class="tab active" onclick="switchFloor(1,this)">1st Floor</div>
-    <div class="tab" onclick="switchFloor(2,this)">2nd Floor</div>
-    <div class="tab" onclick="switchFloor(3,this)">3rd Floor</div>
+  <div class="wf-progress" id="wf-progress">
+    <div class="wp current"></div><div class="wp"></div><div class="wp"></div><div class="wp"></div>
   </div>
-  <div style="flex:1;display:flex;padding:12px 16px;gap:12px;overflow:hidden;min-height:0">
-    <div style="flex:1;min-height:0;min-width:0" id="map-container">
-      <div class="map-grid" id="floor-map">
-        <!-- Populated by JS -->
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0" id="wf-body">
+
+    <!-- Step 1: Directions Overview -->
+    <div class="wf-step active" id="wf-step-1">
+      <div style="padding:12px 20px;display:flex;gap:14px;align-items:center">
+        <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,rgba(242,0,130,.25),rgba(43,38,120,.4));display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="1.5" fill="none"><rect x="4" y="3" width="16" height="18" rx="1"/><line x1="7" y1="3" x2="7" y2="21"/></svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:700;line-height:1.3" id="wf-book-title">The Design of Everyday Things</div>
+          <div class="text-sm text-muted" id="wf-book-author">Don Norman</div>
+        </div>
+      </div>
+      <div style="padding:0 20px">
+        <div class="glass" style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+          <div class="flex items-center gap-12">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--mag);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:800;color:#fff">1</div>
+            <div><div class="text-sm font-semi">Go to 2nd Floor</div><div class="text-xs text-dim">Take the stairs or elevator</div></div>
+          </div>
+          <div style="width:1px;height:8px;background:var(--border);margin-left:16px"></div>
+          <div class="flex items-center gap-12">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(242,0,130,.2);border:2px solid var(--mag);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:800;color:var(--mag)">2</div>
+            <div><div class="text-sm font-semi">Find Shelf Area B</div><div class="text-xs text-dim">Design Stacks — middle section</div></div>
+          </div>
+          <div style="width:1px;height:8px;background:var(--border);margin-left:16px"></div>
+          <div class="flex items-center gap-12">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(242,0,130,.2);border:2px solid rgba(242,0,130,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:800;color:var(--txt3)">3</div>
+            <div><div class="text-sm font-semi" id="wf-call-label">Look for NK1510 .N67</div><div class="text-xs text-dim">Row 3, eye level</div></div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:12px 20px;margin-top:auto">
+        <button class="btn btn-primary w-full" onclick="wfNext()" style="height:44px;font-size:14px">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Show Me the Way
+        </button>
       </div>
     </div>
-    <div style="width:160px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex-shrink:0">
-      <div class="section-title">Legend</div>
-      <div class="glass" style="padding:8px 10px;font-size:10px;display:flex;flex-direction:column;gap:6px">
-        <div class="flex items-center gap-8"><span style="width:10px;height:10px;border-radius:3px;background:rgba(242,0,130,.4);flex-shrink:0"></span>Stacks</div>
-        <div class="flex items-center gap-8"><span style="width:10px;height:10px;border-radius:3px;background:rgba(0,176,130,.4);flex-shrink:0"></span>Study</div>
-        <div class="flex items-center gap-8"><span style="width:10px;height:10px;border-radius:3px;background:rgba(237,219,0,.4);flex-shrink:0"></span>Media</div>
-        <div class="flex items-center gap-8"><span style="width:10px;height:10px;border-radius:3px;background:rgba(43,38,120,.4);flex-shrink:0"></span>Services</div>
-        <div class="flex items-center gap-8"><span style="width:10px;height:10px;border-radius:3px;background:rgba(255,133,0,.4);flex-shrink:0"></span>Entrance</div>
+
+    <!-- Step 2: Floor Map with Route -->
+    <div class="wf-step" id="wf-step-2">
+      <div style="padding:6px 20px">
+        <div class="wf-instruction" id="wf-route-msg">Follow the route to Design Stacks B</div>
       </div>
-      <div class="glass" style="padding:8px 10px;font-size:10px;cursor:pointer" onclick="showScreen('rooms')">
-        <div class="font-semi">Study Rooms</div>
-        <div class="text-dim" style="margin-top:2px">3 available now →</div>
+      <div class="wf-map glass" id="wf-map-container">
+        <div class="map-grid" id="wf-floor-map"></div>
+        <div class="wf-route" id="wf-route-overlay">
+          <!-- Animated arrows injected by JS -->
+        </div>
+      </div>
+      <div style="padding:6px 20px;display:flex;gap:8px">
+        <button class="btn btn-glass btn-sm" style="flex:1" onclick="wfPrev()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back
+        </button>
+        <button class="btn btn-primary btn-sm" style="flex:2" onclick="wfNext()">
+          I'm at the shelf <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
       </div>
     </div>
+
+    <!-- Step 3: Bookshelf Section View -->
+    <div class="wf-step" id="wf-step-3">
+      <div style="padding:10px 20px;text-align:center">
+        <div class="wf-callnum" id="wf-callnum-display">B2</div>
+        <div class="wf-instruction" style="margin-top:4px">Find this section on the shelf</div>
+      </div>
+      <div class="wf-shelf" id="wf-shelf-sections">
+        <!-- Shelf sections A-E injected by JS -->
+      </div>
+      <div style="padding:8px 20px;text-align:center">
+        <div class="wf-loc-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" stroke="var(--mag)" stroke-width="2" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <span class="text-sm font-semi" style="color:var(--mag)">Follow the pink arrows on the floor</span>
+        </div>
+      </div>
+      <div style="padding:6px 20px;display:flex;gap:8px;margin-top:auto">
+        <button class="btn btn-glass btn-sm" style="flex:1" onclick="wfPrev()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back
+        </button>
+        <button class="btn btn-primary btn-sm" style="flex:2" onclick="wfNext()">
+          Found it! Show exact spot <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 4: Exact Shelf Position -->
+    <div class="wf-step" id="wf-step-4">
+      <div style="padding:10px 20px;text-align:center">
+        <div style="font-size:13px;font-weight:700;color:var(--mag);text-transform:uppercase;letter-spacing:1px">Your book is here</div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:2px" id="wf-shelf-row-label">Row 3 — Eye Level</div>
+      </div>
+      <div style="flex:1;padding:0 16px;display:flex;flex-direction:column;gap:4px;min-height:0" id="wf-shelf-rows">
+        <!-- 5 shelf rows injected by JS -->
+      </div>
+      <div style="padding:8px 20px;text-align:center">
+        <div class="glass" style="padding:10px 16px;display:inline-flex;align-items:center;gap:10px">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--mag);animation:pulse 1.5s ease infinite"></div>
+          <span class="text-sm font-semi" id="wf-final-call">NK1510 .N67 2013</span>
+          <span class="text-xs text-dim">— <span id="wf-final-title2">The Design of Everyday Things</span></span>
+        </div>
+      </div>
+      <div style="padding:8px 20px;display:flex;gap:8px">
+        <button class="btn btn-glass btn-sm" style="flex:1" onclick="wfPrev()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back
+        </button>
+        <button class="btn btn-primary btn-sm" style="flex:2" onclick="showScreen('book-detail')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M20 6L9 17l-5-5"/></svg> Done — Back to Book
+        </button>
+      </div>
+    </div>
+
   </div>
   <div class="bottomnav">
     <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2L3 9v11h6v-5h6v5h6V9L12 2Z"/></svg></span>Home</div>
     <div class="nav-item" onclick="showScreen('search')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="11" cy="11" r="8"/><path d="M20 20l-4.35-4.35"/></svg></span>Search</div>
-    <div class="nav-item active"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M4 4c0-1 2-2 4-2s4 1 4 2m8-2c2 0 4 1 4 2M8 2v18m8-18v18M3 9l8-2 4 2 8-2M3 15l8 2 4-2 8 2"/></svg></span>Map</div>
+    <div class="nav-item active"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></span>Find</div>
     <div class="nav-item" onclick="showScreen('community')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M9 3h6v2H9V3zm-6 2h18v14H3V5zm2 2h14v1H5V7zm0 3h14v1H5v-1zm0 3h14v1H5v-1z"/></svg></span>Board</div>
     <div class="nav-item" onclick="showScreen('account')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg></span>Account</div>
   </div>
@@ -455,7 +574,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
   <div class="bottomnav">
     <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2L3 9v11h6v-5h6v5h6V9L12 2Z"/></svg></span>Home</div>
     <div class="nav-item" onclick="showScreen('search')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="11" cy="11" r="8"/><path d="M20 20l-4.35-4.35"/></svg></span>Search</div>
-    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M4 4c0-1 2-2 4-2s4 1 4 2m8-2c2 0 4 1 4 2M8 2v18m8-18v18M3 9l8-2 4 2 8-2M3 15l8 2 4-2 8 2"/></svg></span>Map</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></span>Find</div>
     <div class="nav-item active"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M9 3h6v2H9V3zm-6 2h18v14H3V5zm2 2h14v1H5V7zm0 3h14v1H5v-1zm0 3h14v1H5v-1z"/></svg></span>Board</div>
     <div class="nav-item" onclick="showScreen('account')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg></span>Account</div>
   </div>
@@ -541,7 +660,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
   <div class="bottomnav">
     <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2L3 9v11h6v-5h6v5h6V9L12 2Z"/></svg></span>Home</div>
     <div class="nav-item" onclick="showScreen('search')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="11" cy="11" r="8"/><path d="M20 20l-4.35-4.35"/></svg></span>Search</div>
-    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M4 4c0-1 2-2 4-2s4 1 4 2m8-2c2 0 4 1 4 2M8 2v18m8-18v18M3 9l8-2 4 2 8-2M3 15l8 2 4-2 8 2"/></svg></span>Map</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></span>Find</div>
     <div class="nav-item" onclick="showScreen('community')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M9 3h6v2H9V3zm-6 2h18v14H3V5zm2 2h14v1H5V7zm0 3h14v1H5v-1zm0 3h14v1H5v-1z"/></svg></span>Board</div>
     <div class="nav-item" onclick="showScreen('account')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg></span>Account</div>
   </div>
@@ -589,7 +708,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
   <div class="bottomnav">
     <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2L3 9v11h6v-5h6v5h6V9L12 2Z"/></svg></span>Home</div>
     <div class="nav-item" onclick="showScreen('search')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="11" cy="11" r="8"/><path d="M20 20l-4.35-4.35"/></svg></span>Search</div>
-    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M4 4c0-1 2-2 4-2s4 1 4 2m8-2c2 0 4 1 4 2M8 2v18m8-18v18M3 9l8-2 4 2 8-2M3 15l8 2 4-2 8 2"/></svg></span>Map</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></span>Find</div>
     <div class="nav-item" onclick="showScreen('community')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M9 3h6v2H9V3zm-6 2h18v14H3V5zm2 2h14v1H5V7zm0 3h14v1H5v-1zm0 3h14v1H5v-1z"/></svg></span>Board</div>
     <div class="nav-item" onclick="showScreen('account')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg></span>Account</div>
   </div>
@@ -703,7 +822,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
       <!-- Actions -->
       <div style="display:flex;gap:8px">
         <button class="btn btn-primary" style="flex:1" onclick="showScreen('success')">RSVP — Save My Spot</button>
-        <button class="btn btn-glass" onclick="showScreen('map');highlightZone('D3')">📍 Map</button>
+        <button class="btn btn-glass" onclick="startWayfinding('Event Space','3rd Floor','Room 305',3,'H3')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg> Map</button>
       </div>
       <!-- Capacity -->
       <div class="glass" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
@@ -761,7 +880,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
   <div class="bottomnav">
     <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2L3 9v11h6v-5h6v5h6V9L12 2Z"/></svg></span>Home</div>
     <div class="nav-item" onclick="showScreen('search')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="11" cy="11" r="8"/><path d="M20 20l-4.35-4.35"/></svg></span>Search</div>
-    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M4 4c0-1 2-2 4-2s4 1 4 2m8-2c2 0 4 1 4 2M8 2v18m8-18v18M3 9l8-2 4 2 8-2M3 15l8 2 4-2 8 2"/></svg></span>Map</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></span>Find</div>
     <div class="nav-item" onclick="showScreen('community')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M9 3h6v2H9V3zm-6 2h18v14H3V5zm2 2h14v1H5V7zm0 3h14v1H5v-1zm0 3h14v1H5v-1z"/></svg></span>Board</div>
     <div class="nav-item" onclick="showScreen('account')"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg></span>Account</div>
   </div>
@@ -781,13 +900,14 @@ function showScreen(id) {
   if (id !== currentScreen) { navHistory.push(id); }
   currentScreen = id;
   resetTimeout();
+  if (id === 'map') initWayfindingDefault();
   // Update bottom nav active states
   var activeScreen = document.getElementById('s-' + id);
   if (activeScreen) {
     var nav = activeScreen.querySelector('.bottomnav');
     if (nav) {
       nav.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
-      var mapping = {dashboard:'Home',search:'Search',map:'Map',community:'Board',account:'Account'};
+      var mapping = {dashboard:'Home',search:'Search',map:'Find',community:'Board',account:'Account'};
       var label = mapping[id];
       if (label) {
         nav.querySelectorAll('.nav-item').forEach(function(n){ if(n.textContent.trim()===label) n.classList.add('active'); });
@@ -883,8 +1003,8 @@ var floors = {
   ]
 };
 
-function renderFloor(n) {
-  var map = document.getElementById('floor-map');
+function renderFloor(n, containerId) {
+  var map = document.getElementById(containerId || 'wf-floor-map');
   map.innerHTML = '';
   (floors[n] || []).forEach(function(z) {
     var d = document.createElement('div');
@@ -899,21 +1019,153 @@ function renderFloor(n) {
     map.appendChild(d);
   });
 }
-renderFloor(1);
 
-function switchFloor(n, el) {
-  document.querySelectorAll('#s-map .tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderFloor(n);
+// ===== WAYFINDING SYSTEM =====
+var wfState = { step:1, title:'', author:'', call:'', floor:2, zone:'B2', section:'B' };
+
+function startWayfinding(title, author, callNum, floor, zone) {
+  wfState = { step:1, title:title, author:author, call:callNum, floor:floor, zone:zone, section:zone.charAt(0) };
+  // Populate step 1
+  document.getElementById('wf-book-title').textContent = title;
+  document.getElementById('wf-book-author').textContent = author;
+  document.getElementById('wf-call-label').textContent = 'Look for ' + callNum;
+  document.getElementById('wf-floor-tag').textContent = ordFloor(floor);
+  document.getElementById('wf-title').textContent = 'Find: ' + title.substring(0, 28) + (title.length > 28 ? '...' : '');
+  // Reset to step 1
+  wfGoToStep(1);
+  showScreen('map');
 }
 
-function highlightZone(id) {
-  // Switch to floor 2 and highlight
-  switchFloor(2, document.querySelectorAll('#s-map .tab')[1]);
+function ordFloor(n) { return n === 1 ? '1st Floor' : n === 2 ? '2nd Floor' : '3rd Floor'; }
+
+function wfGoToStep(n) {
+  wfState.step = n;
+  document.querySelectorAll('.wf-step').forEach(function(s) { s.classList.remove('active'); });
+  var step = document.getElementById('wf-step-' + n);
+  if (step) step.classList.add('active');
+  // Update progress bar
+  var bars = document.querySelectorAll('#wf-progress .wp');
+  bars.forEach(function(b, i) {
+    b.className = 'wp';
+    if (i < n - 1) b.classList.add('done');
+    if (i === n - 1) b.classList.add('current');
+  });
+  // Render step content
+  if (n === 2) renderWfMap();
+  if (n === 3) renderWfShelf();
+  if (n === 4) renderWfBooks();
+}
+
+function wfNext() { if (wfState.step < 4) wfGoToStep(wfState.step + 1); }
+function wfPrev() { if (wfState.step > 1) wfGoToStep(wfState.step - 1); }
+
+function renderWfMap() {
+  renderFloor(wfState.floor, 'wf-floor-map');
+  document.getElementById('wf-route-msg').textContent = 'Follow the route to ' + wfState.zone;
+  // Highlight target zone
   setTimeout(function() {
-    var zone = document.getElementById('zone-' + id);
+    var zone = document.getElementById('zone-' + wfState.zone);
     if (zone) { zone.classList.add('highlight'); zone.style.background = 'rgba(242,0,130,.45)'; zone.style.borderColor = 'var(--mag)'; }
-  }, 300);
+    // Render animated route arrows from entrance to target
+    renderRouteArrows();
+  }, 200);
+}
+
+function renderRouteArrows() {
+  var overlay = document.getElementById('wf-route-overlay');
+  overlay.innerHTML = '';
+  var targetZone = document.getElementById('zone-' + wfState.zone);
+  if (!targetZone) return;
+  var container = document.getElementById('wf-map-container');
+  var cRect = container.getBoundingClientRect();
+  var tRect = targetZone.getBoundingClientRect();
+  // Create path from bottom-center (entrance) to target
+  var startX = cRect.width / 2;
+  var startY = cRect.height - 20;
+  var endX = (tRect.left - cRect.left) + tRect.width / 2;
+  var endY = (tRect.top - cRect.top) + tRect.height / 2;
+  // Place arrows along the path
+  var steps = 5;
+  for (var i = 0; i < steps; i++) {
+    var t = (i + 1) / (steps + 1);
+    var ax = startX + (endX - startX) * t;
+    var ay = startY + (endY - startY) * t;
+    var arrow = document.createElement('div');
+    arrow.className = 'wf-arrow';
+    arrow.style.left = ax + 'px';
+    arrow.style.top = ay + 'px';
+    arrow.style.animationDelay = (i * 0.2) + 's';
+    arrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" stroke="var(--mag)" stroke-width="2.5" fill="none"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    // Rotate arrow to point in direction of travel
+    var angle = Math.atan2(endY - startY, endX - startX) * (180 / Math.PI) - 90;
+    arrow.style.transform = 'translate(-50%,-50%) rotate(' + angle + 'deg)';
+    overlay.appendChild(arrow);
+  }
+}
+
+function renderWfShelf() {
+  document.getElementById('wf-callnum-display').textContent = wfState.zone;
+  var container = document.getElementById('wf-shelf-sections');
+  container.innerHTML = '';
+  var sections = ['A', 'B', 'C', 'D', 'E'];
+  var colors = ['rgba(43,38,120,.3)', 'rgba(242,0,130,.2)', 'rgba(0,176,130,.2)', 'rgba(237,219,0,.2)', 'rgba(255,133,0,.2)'];
+  sections.forEach(function(s, i) {
+    var div = document.createElement('div');
+    div.className = 'wf-section glass';
+    div.style.background = colors[i];
+    if (s === wfState.section) div.classList.add('target');
+    div.innerHTML = '<div style="font-size:22px;font-weight:800">' + s + '</div><div class="text-xs text-dim">Section ' + s + '</div>';
+    container.appendChild(div);
+  });
+}
+
+function renderWfBooks() {
+  document.getElementById('wf-final-call').textContent = wfState.call;
+  document.getElementById('wf-final-title2').textContent = wfState.title;
+  var container = document.getElementById('wf-shelf-rows');
+  container.innerHTML = '';
+  // 5 shelf rows, target is row 3
+  var targetRow = 2; // 0-indexed, row 3
+  for (var r = 0; r < 5; r++) {
+    var row = document.createElement('div');
+    row.style.cssText = 'flex:1;display:flex;gap:2px;align-items:flex-end;border-bottom:2px solid rgba(255,255,255,.08);padding-bottom:2px';
+    var bookCount = 8 + Math.floor(Math.random() * 4);
+    var targetBook = 3 + Math.floor(Math.random() * 3);
+    for (var b = 0; b < bookCount; b++) {
+      var book = document.createElement('div');
+      var h = 70 + Math.floor(Math.random() * 25);
+      var hue = Math.floor(Math.random() * 360);
+      var isTarget = (r === targetRow && b === targetBook);
+      book.className = 'wf-book' + (isTarget ? ' target' : '');
+      book.style.height = h + '%';
+      book.style.flex = '1';
+      book.style.borderRadius = '2px 2px 0 0';
+      if (isTarget) {
+        book.style.background = 'linear-gradient(180deg, rgba(242,0,130,.6), rgba(242,0,130,.3))';
+        book.style.color = '#fff';
+        book.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>';
+      } else {
+        book.style.background = 'hsla(' + hue + ',30%,40%,.3)';
+        book.style.border = '1px solid rgba(255,255,255,.08)';
+      }
+      row.appendChild(book);
+    }
+    // Row label
+    var label = document.createElement('div');
+    label.style.cssText = 'width:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--txt3)';
+    label.textContent = (r + 1);
+    if (r === targetRow) { label.style.color = 'var(--mag)'; label.style.fontWeight = '800'; }
+    row.insertBefore(label, row.firstChild);
+    container.appendChild(row);
+  }
+  document.getElementById('wf-shelf-row-label').textContent = 'Row ' + (targetRow + 1) + ' — Eye Level';
+}
+
+// Initialize default wayfinding view when tapping Find nav without context
+function initWayfindingDefault() {
+  if (!wfState.title) {
+    startWayfinding('The Design of Everyday Things', 'Don Norman', 'NK1510 .N67 2013', 2, 'B2');
+  }
 }
 
 // ===== COMMUNITY BOARD =====
@@ -986,26 +1238,122 @@ function openEventDetail(item) {
 }
 renderComm('events');
 
-// ===== CHAT =====
-var chatResponses = {
-  'how do i find a book?': 'Great question! You can use the Search tab to look up any book by title, author, or subject. Once you find it, tap "Find on Map" to see exactly where it is on the shelf. You can also ask me for a specific title!',
-  'where are study rooms?': 'Study rooms are on the 2nd and 3rd floors. Room 201 (quiet, 4 seats) and 202 (seminar, 12 seats) are on Floor 2. Room 301 (quiet) and 305 (group, 8 seats) are on Floor 3. Want me to show you availability?',
-  'talk to a librarian': 'I\'ll connect you with a librarian! During library hours, you can speak with someone at the circulation desk on the 1st floor. For online help, email library@ecuad.ca or use the live chat on the ECUAD website.'
-};
+// ===== AI CHATBOT =====
+var chatContext = [];
+var botTyping = false;
+
+// Knowledge base — keyword patterns mapped to intelligent responses
+var botKnowledge = [
+  {keys:['find','book','search','look up','looking for','where is'],
+   reply:'I can help you find that! You can use the Search tab to look up any book by title, author, or subject. Once you find it, tap "Find on Map" to see its exact shelf location. Want me to search for something specific? Just tell me the title or topic.',
+   followUp:'What are you looking for? I can search by title, author, or subject area.'},
+  {keys:['study room','book a room','group room','quiet room','room'],
+   reply:'We have study rooms on the 2nd and 3rd floors:\n\n• Room 201 (2F) — Quiet, 4 seats, whiteboard\n• Room 202 (2F) — Seminar, 12 seats\n• Room 305 (3F) — Group, 8 seats, screen + whiteboard\n• Room 301 (3F) — Quiet, 4 seats\n\nRooms 201, 305, and 102 are available right now. Want me to book one for you?'},
+  {keys:['librarian','speak','human','real person','staff','help desk'],
+   reply:'Of course! Here are your options:\n\n• In person — Circulation desk, 1st floor (open now)\n• Email — library@ecuad.ca (response within 24h)\n• Phone — 604-844-3840\n\nThe reference librarian on duty today is Sarah. She specializes in art history and research methods.'},
+  {keys:['hour','open','close','time','when'],
+   reply:'The library is currently OPEN. Here are our hours:\n\n• Mon–Fri: 8:00 AM – 9:00 PM\n• Saturday: 10:00 AM – 6:00 PM\n• Sunday: 12:00 PM – 5:00 PM\n\nHours may change during holidays and exam periods. The building closes 15 minutes after the library.'},
+  {keys:['print','scan','copy','printer','photocopy'],
+   reply:'Print and scan stations are on the 1st floor near the main entrance.\n\n• B&W printing: $0.10/page\n• Color printing: $0.25/page\n• Scanning: Free (to email)\n• Large format: Up to 42" wide, request at desk\n\nPrint from USB or send files to print@ecuad.ca. Your student ID balance is used for payment.'},
+  {keys:['wifi','internet','connect','network','password'],
+   reply:'WiFi is available throughout the library:\n\n• Network: ECU-Secure\n• Login with your student credentials\n• Guest access: ECU-Guest (limited, 2hr sessions)\n\nIf you\'re having trouble connecting, the IT help desk is in the main building, room 202.'},
+  {keys:['reserve','hold','request','interlibrary','loan','ill'],
+   reply:'I can help with that!\n\n• Place a hold — Search for the book and tap "Hold." You\'ll be notified by email when it\'s ready.\n• Interlibrary loan — If we don\'t have it, we can borrow from other libraries. Takes 5–10 business days.\n• Request a purchase — Suggest new materials through the "Suggest a Purchase" form at the circulation desk.\n\nWant me to search for something now?'},
+  {keys:['renew','extend','due','overdue','fine','fee','late'],
+   reply:'You can manage loans from your Account page:\n\n• Renew — Tap any checked-out item and hit "Renew." You get up to 2 renewals per item.\n• Due dates — Standard loan is 21 days. Short loan items are 3 days.\n• Late fees — $0.25/day for standard items, $1/day for short loan. Max $10 per item.\n• Lost items — Replacement cost + $10 processing fee.\n\nNeed to check your current loans?'},
+  {keys:['map','floor','where','location','navigate','find my way','direction'],
+   reply:'The library has 3 floors:\n\n• 1st Floor — Circulation desk, new arrivals, computer stations, self-checkout, main entrance\n• 2nd Floor — Design stacks, study rooms 201 & 202, periodicals, reading lounge\n• 3rd Floor — Special collections, archives, film & media, group room 305\n\nI can show you the interactive map if you\'d like! Just tap the Map tab.'},
+  {keys:['event','workshop','talk','screening','happening','what\'s on'],
+   reply:'Here\'s what\'s coming up:\n\n• Apr 8 — Artist Talk: Material Futures (6 PM, Room 305)\n• Apr 10 — Research Methods Workshop (2 PM, Library Main)\n• Apr 12 — Film Screening: Objectified (7 PM, Media Room)\n• Apr 14 — Risograph Print Workshop (1 PM, Print Lab)\n\nCheck the Community Board for full details and RSVP!'},
+  {keys:['design','typography','illustration','art','ceramics'],
+   reply:'Great topic! Our collection is strong in those areas. Here are some popular picks:\n\n• Design — "The Design of Everyday Things" by Don Norman (2F, B2)\n• Typography — "Thinking with Type" by Ellen Lupton (1F, C1)\n• Illustration — "Understanding Comics" by Scott McCloud (1F, A1)\n\nWant me to search for something more specific? I can also recommend resources for your course.'},
+  {keys:['thesis','research','cite','citation','reference','zotero','bibliography'],
+   reply:'For research and citation help:\n\n• Citation styles — We support APA, MLA, and Chicago. Guides are at the reference desk.\n• Zotero — Free citation manager. Workshops every other Thursday.\n• Research consultations — Book a 30-min session with a librarian for thesis support.\n• Databases — Access JSTOR, EBSCO, and ProQuest through the ECU portal.\n\nThe Research Methods Workshop on Apr 10 covers all of this!'},
+  {keys:['accessibility','accessible','disability','accommodation','screen reader'],
+   reply:'We\'re committed to accessibility:\n\n• Adjustable desks on every floor\n• Screen readers and magnification software on designated workstations (1st floor)\n• Large print and audio materials available on request\n• Elevator access to all floors\n• Quiet zones on 2nd and 3rd floors\n\nNeed a specific accommodation? Talk to staff at the circulation desk — we\'re happy to help.'},
+  {keys:['hello','hi','hey','sup','yo','what\'s up','good morning','good afternoon'],
+   reply:'Hey there! Welcome to the ECU Library. I\'m your AI library assistant — I can help you find books, navigate the building, check hours, book study rooms, and more. What can I do for you?'},
+  {keys:['thank','thanks','thx','appreciate','cheers'],
+   reply:'You\'re welcome! Happy to help. If you need anything else, just ask — I\'m here all day. You can also visit the circulation desk on the 1st floor for in-person help.'},
+  {keys:['bye','goodbye','see you','later','done','that\'s all'],
+   reply:'See you later! Don\'t forget — you can always come back here if you need help. Have a great day at ECU!'},
+];
+
+function getBotReply(msg) {
+  var lower = msg.toLowerCase();
+  // Check each knowledge entry for keyword matches
+  var bestMatch = null;
+  var bestScore = 0;
+  for (var i = 0; i < botKnowledge.length; i++) {
+    var entry = botKnowledge[i];
+    var score = 0;
+    for (var k = 0; k < entry.keys.length; k++) {
+      if (lower.includes(entry.keys[k])) score++;
+    }
+    if (score > bestScore) { bestScore = score; bestMatch = entry; }
+  }
+  if (bestMatch && bestScore > 0) {
+    chatContext.push(bestMatch.keys[0]);
+    return bestMatch.reply;
+  }
+  // Contextual fallback — try to be helpful based on conversation history
+  if (chatContext.length > 0) {
+    var lastTopic = chatContext[chatContext.length - 1];
+    var topicEntry = botKnowledge.find(function(e) { return e.keys[0] === lastTopic; });
+    if (topicEntry && topicEntry.followUp) {
+      return topicEntry.followUp;
+    }
+  }
+  // General fallback
+  var fallbacks = [
+    'I\'m not sure I understand that one — could you rephrase? I can help with finding books, study rooms, library hours, printing, events, and more.',
+    'Hmm, I don\'t have info on that. Try asking about books, study rooms, hours, printing, or events. Or I can connect you with a librarian!',
+    'That\'s outside my area — but a librarian can definitely help! Head to the circulation desk on the 1st floor, or I can look up something else for you.',
+  ];
+  return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+}
+
+function addBotMessage(text) {
+  var container = document.getElementById('chat-messages');
+  // Replace newlines with <br> for display
+  var html = text.replace(/\n/g, '<br>');
+  container.innerHTML += '<div class="glass" style="padding:10px 14px;align-self:flex-start;max-width:80%;border-radius:14px 14px 14px 4px"><div class="text-sm" style="line-height:1.6">' + html + '</div><div class="text-xs text-dim" style="margin-top:4px">Library AI</div></div>';
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTypingIndicator() {
+  var container = document.getElementById('chat-messages');
+  container.innerHTML += '<div id="typing-indicator" class="glass" style="padding:10px 14px;align-self:flex-start;border-radius:14px 14px 14px 4px;display:flex;gap:4px;align-items:center"><div style="width:6px;height:6px;border-radius:50%;background:var(--txt3);animation:typeDot .8s ease infinite"></div><div style="width:6px;height:6px;border-radius:50%;background:var(--txt3);animation:typeDot .8s ease .15s infinite"></div><div style="width:6px;height:6px;border-radius:50%;background:var(--txt3);animation:typeDot .8s ease .3s infinite"></div></div>';
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  var el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
 
 function sendChat() {
+  if (botTyping) return;
   var input = document.getElementById('chat-input');
   var msg = input.value.trim();
   if (!msg) return;
   var container = document.getElementById('chat-messages');
+  // User message
   container.innerHTML += '<div style="align-self:flex-end;max-width:75%;padding:10px 14px;background:rgba(242,0,130,.15);border:1px solid rgba(242,0,130,.25);border-radius:14px 14px 4px 14px"><div class="text-sm">' + msg + '</div></div>';
   input.value = '';
-  var reply = chatResponses[msg.toLowerCase()] || 'Thanks for your question! Let me look into that. For immediate help, a librarian is available at the circulation desk on the 1st floor. You can also search our catalog using the Search tab.';
-  setTimeout(function() {
-    container.innerHTML += '<div class="glass" style="padding:10px 14px;align-self:flex-start;max-width:75%;border-radius:14px 14px 14px 4px"><div class="text-sm" style="line-height:1.5">' + reply + '</div><div class="text-xs text-dim" style="margin-top:4px">Library Bot</div></div>';
-    container.scrollTop = container.scrollHeight;
-  }, 600);
   container.scrollTop = container.scrollHeight;
+
+  // Bot thinking
+  botTyping = true;
+  var thinkTime = 400 + Math.random() * 800; // 0.4-1.2s
+  showTypingIndicator();
+
+  setTimeout(function() {
+    removeTypingIndicator();
+    var reply = getBotReply(msg);
+    addBotMessage(reply);
+    botTyping = false;
+  }, thinkTime);
 }
 
 function quickChat(msg) {
