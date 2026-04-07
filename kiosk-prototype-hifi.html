@@ -116,6 +116,16 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
 #timeout-overlay{position:absolute;inset:0;background:rgba(12,12,24,.92);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;cursor:pointer}
 #timeout-overlay.show{display:flex}
 
+/* On-screen keyboard */
+.osk{position:absolute;bottom:56px;left:0;right:0;background:rgba(20,20,40,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:6px 8px;z-index:50;display:none;flex-direction:column;gap:4px}
+.osk.show{display:flex}
+.osk-row{display:flex;gap:3px;justify-content:center}
+.osk-key{height:34px;min-width:28px;padding:0 8px;border-radius:6px;background:var(--glass2);border:1px solid var(--border);color:var(--txt);font-family:inherit;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
+.osk-key:active,.osk-key:hover{background:var(--glass3);border-color:var(--border2)}
+.osk-key.wide{min-width:50px;font-size:11px}
+.osk-key.space{flex:1;max-width:260px}
+.osk-key.accent{background:rgba(242,0,130,.2);border-color:rgba(242,0,130,.3);color:#ff4da6}
+
 /* Fullscreen button */
 #fs-btn{position:absolute;top:8px;right:8px;z-index:200;width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;color:var(--txt3);font-size:14px}
 #fs-btn:hover{background:rgba(255,255,255,.2);color:var(--txt)}
@@ -166,60 +176,66 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
       <div class="topbar-icon" onclick="showScreen('account')">👤</div>
     </div>
   </div>
-  <div class="content scrollarea p-20" style="gap:16px;display:flex;flex-direction:column">
+  <div style="flex:1;display:flex;flex-direction:column;padding:12px 16px;gap:10px;overflow:hidden">
     <!-- Search bar -->
     <div style="position:relative" onclick="showScreen('search')">
-      <input class="input" placeholder="Search books, resources, rooms..." readonly style="cursor:pointer;padding-left:36px">
+      <input class="input" placeholder="Search books, resources, rooms..." readonly style="cursor:pointer;padding-left:36px;padding:8px 14px 8px 36px">
       <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--txt3)">🔍</span>
     </div>
 
-    <!-- Quick actions -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-      <div class="glass2" style="padding:14px 8px;text-align:center;border-radius:14px;cursor:pointer" onclick="showScreen('search')">
-        <div style="font-size:24px;margin-bottom:6px">🔍</div>
-        <div style="font-size:11px;font-weight:600">Search</div>
+    <!-- Quick actions + Hours row -->
+    <div style="display:flex;gap:10px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:1">
+        <div class="glass2" style="padding:10px 6px;text-align:center;border-radius:12px;cursor:pointer" onclick="showScreen('search')">
+          <div style="font-size:20px;margin-bottom:3px">🔍</div>
+          <div style="font-size:10px;font-weight:600">Search</div>
+        </div>
+        <div class="glass2" style="padding:10px 6px;text-align:center;border-radius:12px;cursor:pointer" onclick="showScreen('map')">
+          <div style="font-size:20px;margin-bottom:3px">🗺️</div>
+          <div style="font-size:10px;font-weight:600">Map</div>
+        </div>
+        <div class="glass2" style="padding:10px 6px;text-align:center;border-radius:12px;cursor:pointer" onclick="showScreen('community')">
+          <div style="font-size:20px;margin-bottom:3px">📋</div>
+          <div style="font-size:10px;font-weight:600">Board</div>
+        </div>
+        <div class="glass2" style="padding:10px 6px;text-align:center;border-radius:12px;cursor:pointer" onclick="showScreen('help')">
+          <div style="font-size:20px;margin-bottom:3px">💬</div>
+          <div style="font-size:10px;font-weight:600">Help</div>
+        </div>
       </div>
-      <div class="glass2" style="padding:14px 8px;text-align:center;border-radius:14px;cursor:pointer" onclick="showScreen('map')">
-        <div style="font-size:24px;margin-bottom:6px">🗺️</div>
-        <div style="font-size:11px;font-weight:600">Map</div>
+      <!-- Hours compact -->
+      <div class="glass" style="padding:10px 14px;display:flex;flex-direction:column;justify-content:center;min-width:140px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div class="text-xs font-semi">Hours Today</div>
+          <span class="tag tag-grn" style="padding:3px 8px;font-size:9px">Open</span>
+        </div>
+        <div class="text-xs text-dim" style="margin-top:3px">Mon–Fri 8AM – 9PM</div>
       </div>
-      <div class="glass2" style="padding:14px 8px;text-align:center;border-radius:14px;cursor:pointer" onclick="showScreen('community')">
-        <div style="font-size:24px;margin-bottom:6px">📋</div>
-        <div style="font-size:11px;font-weight:600">Board</div>
-      </div>
-      <div class="glass2" style="padding:14px 8px;text-align:center;border-radius:14px;cursor:pointer" onclick="showScreen('help')">
-        <div style="font-size:24px;margin-bottom:6px">💬</div>
-        <div style="font-size:11px;font-weight:600">Help</div>
-      </div>
-    </div>
-
-    <!-- Hours & status -->
-    <div class="glass" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <div class="text-sm font-semi">Library Hours Today</div>
-        <div class="text-xs text-muted mt-8">Mon–Fri 8 AM – 9 PM</div>
-      </div>
-      <span class="tag tag-grn">Open Now</span>
     </div>
 
     <!-- Popular right now -->
-    <div>
-      <div class="section-title">Popular Right Now</div>
-      <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">
-        <div class="glass2" style="min-width:140px;padding:12px;border-radius:12px;cursor:pointer" onclick="showScreen('book-detail')">
-          <div style="width:100%;height:70px;background:linear-gradient(135deg,rgba(242,0,130,.2),rgba(43,38,120,.3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:8px">📕</div>
-          <div class="text-xs font-semi" style="line-height:1.3">Design of Everyday Things</div>
-          <div class="text-xs text-dim" style="margin-top:2px">Don Norman</div>
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+      <div class="section-title" style="margin-bottom:6px">Popular Right Now</div>
+      <div style="display:flex;gap:8px;flex:1;min-height:0">
+        <div class="glass2" style="flex:1;padding:10px;border-radius:12px;cursor:pointer;display:flex;flex-direction:column" onclick="showScreen('book-detail')">
+          <div style="flex:1;background:linear-gradient(135deg,rgba(242,0,130,.2),rgba(43,38,120,.3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:6px;min-height:0">📕</div>
+          <div class="text-xs font-semi" style="line-height:1.2">Design of Everyday Things</div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:2px">Don Norman</div>
         </div>
-        <div class="glass2" style="min-width:140px;padding:12px;border-radius:12px;cursor:pointer" onclick="showScreen('book-detail')">
-          <div style="width:100%;height:70px;background:linear-gradient(135deg,rgba(0,176,130,.2),rgba(43,38,120,.3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:8px">📗</div>
-          <div class="text-xs font-semi" style="line-height:1.3">Interaction of Color</div>
-          <div class="text-xs text-dim" style="margin-top:2px">Josef Albers</div>
+        <div class="glass2" style="flex:1;padding:10px;border-radius:12px;cursor:pointer;display:flex;flex-direction:column" onclick="showScreen('book-detail')">
+          <div style="flex:1;background:linear-gradient(135deg,rgba(0,176,130,.2),rgba(43,38,120,.3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:6px;min-height:0">📗</div>
+          <div class="text-xs font-semi" style="line-height:1.2">Interaction of Color</div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:2px">Josef Albers</div>
         </div>
-        <div class="glass2" style="min-width:140px;padding:12px;border-radius:12px;cursor:pointer" onclick="showScreen('book-detail')">
-          <div style="width:100%;height:70px;background:linear-gradient(135deg,rgba(255,133,0,.2),rgba(43,38,120,.3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:8px">📘</div>
-          <div class="text-xs font-semi" style="line-height:1.3">Thinking with Type</div>
-          <div class="text-xs text-dim" style="margin-top:2px">Ellen Lupton</div>
+        <div class="glass2" style="flex:1;padding:10px;border-radius:12px;cursor:pointer;display:flex;flex-direction:column" onclick="showScreen('book-detail')">
+          <div style="flex:1;background:linear-gradient(135deg,rgba(255,133,0,.2),rgba(43,38,120,.3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:6px;min-height:0">📘</div>
+          <div class="text-xs font-semi" style="line-height:1.2">Thinking with Type</div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:2px">Ellen Lupton</div>
+        </div>
+        <div class="glass2" style="flex:1;padding:10px;border-radius:12px;cursor:pointer;display:flex;flex-direction:column" onclick="showScreen('rooms')">
+          <div style="flex:1;background:linear-gradient(135deg,rgba(237,219,0,.2),rgba(43,38,120,.3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:6px;min-height:0">📅</div>
+          <div class="text-xs font-semi" style="line-height:1.2">Book a Study Room</div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:2px">3 available</div>
         </div>
       </div>
     </div>
@@ -257,6 +273,48 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
     </div>
     <div class="scrollarea" style="padding:12px 20px;display:flex;flex-direction:column;gap:8px" id="results-list">
       <!-- Populated by JS -->
+    </div>
+  </div>
+  <!-- On-screen keyboard -->
+  <div class="osk show" id="osk">
+    <div class="osk-row">
+      <div class="osk-key" onclick="oskType('q')">q</div>
+      <div class="osk-key" onclick="oskType('w')">w</div>
+      <div class="osk-key" onclick="oskType('e')">e</div>
+      <div class="osk-key" onclick="oskType('r')">r</div>
+      <div class="osk-key" onclick="oskType('t')">t</div>
+      <div class="osk-key" onclick="oskType('y')">y</div>
+      <div class="osk-key" onclick="oskType('u')">u</div>
+      <div class="osk-key" onclick="oskType('i')">i</div>
+      <div class="osk-key" onclick="oskType('o')">o</div>
+      <div class="osk-key" onclick="oskType('p')">p</div>
+    </div>
+    <div class="osk-row">
+      <div class="osk-key" onclick="oskType('a')">a</div>
+      <div class="osk-key" onclick="oskType('s')">s</div>
+      <div class="osk-key" onclick="oskType('d')">d</div>
+      <div class="osk-key" onclick="oskType('f')">f</div>
+      <div class="osk-key" onclick="oskType('g')">g</div>
+      <div class="osk-key" onclick="oskType('h')">h</div>
+      <div class="osk-key" onclick="oskType('j')">j</div>
+      <div class="osk-key" onclick="oskType('k')">k</div>
+      <div class="osk-key" onclick="oskType('l')">l</div>
+    </div>
+    <div class="osk-row">
+      <div class="osk-key wide" onclick="oskShift()">⇧</div>
+      <div class="osk-key" onclick="oskType('z')">z</div>
+      <div class="osk-key" onclick="oskType('x')">x</div>
+      <div class="osk-key" onclick="oskType('c')">c</div>
+      <div class="osk-key" onclick="oskType('v')">v</div>
+      <div class="osk-key" onclick="oskType('b')">b</div>
+      <div class="osk-key" onclick="oskType('n')">n</div>
+      <div class="osk-key" onclick="oskType('m')">m</div>
+      <div class="osk-key wide" onclick="oskBackspace()">⌫</div>
+    </div>
+    <div class="osk-row">
+      <div class="osk-key wide" onclick="oskToggleNum()">123</div>
+      <div class="osk-key space" onclick="oskType(' ')">space</div>
+      <div class="osk-key accent wide" onclick="oskSearch()">Search</div>
     </div>
   </div>
   <div class="bottomnav">
@@ -971,6 +1029,50 @@ resetTimeout();
 
 // Init search results
 filterResults();
+
+// ===== ON-SCREEN KEYBOARD =====
+var oskShifted = false;
+function oskType(ch) {
+  var input = document.getElementById('search-input');
+  if (!input) return;
+  if (oskShifted) { ch = ch.toUpperCase(); oskShifted = false; updateOskKeys(); }
+  input.value += ch;
+  input.dispatchEvent(new Event('input'));
+  input.focus();
+}
+function oskBackspace() {
+  var input = document.getElementById('search-input');
+  if (!input) return;
+  input.value = input.value.slice(0, -1);
+  input.dispatchEvent(new Event('input'));
+}
+function oskShift() {
+  oskShifted = !oskShifted;
+  updateOskKeys();
+}
+function updateOskKeys() {
+  document.querySelectorAll('.osk-key').forEach(function(k) {
+    if (k.textContent.length === 1 && k.textContent.match(/[a-zA-Z]/)) {
+      k.textContent = oskShifted ? k.textContent.toUpperCase() : k.textContent.toLowerCase();
+    }
+  });
+}
+function oskSearch() {
+  var input = document.getElementById('search-input');
+  if (input && input.value.trim()) filterResults();
+}
+function oskToggleNum() {
+  var btn = event.target;
+  var osk = document.getElementById('osk');
+  var rows = osk.querySelectorAll('.osk-row');
+  if (btn.textContent === '123') {
+    rows[0].innerHTML = '<div class="osk-key" onclick="oskType(\'1\')">1</div><div class="osk-key" onclick="oskType(\'2\')">2</div><div class="osk-key" onclick="oskType(\'3\')">3</div><div class="osk-key" onclick="oskType(\'4\')">4</div><div class="osk-key" onclick="oskType(\'5\')">5</div><div class="osk-key" onclick="oskType(\'6\')">6</div><div class="osk-key" onclick="oskType(\'7\')">7</div><div class="osk-key" onclick="oskType(\'8\')">8</div><div class="osk-key" onclick="oskType(\'9\')">9</div><div class="osk-key" onclick="oskType(\'0\')">0</div>';
+    btn.textContent = 'abc';
+  } else {
+    rows[0].innerHTML = '<div class="osk-key" onclick="oskType(\'q\')">q</div><div class="osk-key" onclick="oskType(\'w\')">w</div><div class="osk-key" onclick="oskType(\'e\')">e</div><div class="osk-key" onclick="oskType(\'r\')">r</div><div class="osk-key" onclick="oskType(\'t\')">t</div><div class="osk-key" onclick="oskType(\'y\')">y</div><div class="osk-key" onclick="oskType(\'u\')">u</div><div class="osk-key" onclick="oskType(\'i\')">i</div><div class="osk-key" onclick="oskType(\'o\')">o</div><div class="osk-key" onclick="oskType(\'p\')">p</div>';
+    btn.textContent = '123';
+  }
+}
 
 // ===== FULLSCREEN =====
 function toggleFullscreen() {
