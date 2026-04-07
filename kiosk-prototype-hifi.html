@@ -67,7 +67,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
 .scrollarea::-webkit-scrollbar{display:none}
 
 /* Content area */
-.content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.content{flex:1;overflow:auto;display:flex;flex-direction:column}
 
 /* Cards */
 .card{background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:14px;cursor:pointer;transition:all .2s}
@@ -99,8 +99,8 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
 .tab:hover{color:var(--txt2)}
 
 /* Map grid */
-.map-grid{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(3,1fr);gap:4px;height:100%;padding:4px}
-.map-zone{border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;text-align:center;line-height:1.2;padding:2px;transition:all .3s}
+.map-grid{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(3,1fr);gap:6px;width:100%;height:100%;padding:6px}
+.map-zone{border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;text-align:center;line-height:1.3;padding:4px;transition:all .3s;white-space:pre-line;overflow:hidden;min-width:0;min-height:0}
 .map-zone.highlight{animation:pulse 1.5s ease infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(242,0,130,.3)}50%{box-shadow:0 0 0 8px rgba(242,0,130,0)}}
 
@@ -129,11 +129,20 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
 
 <!-- ========== WELCOME ========== -->
 <div class="screen active" id="s-welcome" style="align-items:center;justify-content:center;text-align:center;padding:40px">
-  <div style="font-size:48px;margin-bottom:8px">📚</div>
+  <!-- ECU Logo -->
+  <svg width="60" height="60" viewBox="0 0 60 60" style="margin-bottom:12px">
+    <rect width="60" height="60" rx="14" fill="#f20082"/>
+    <text x="30" y="24" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="800" font-size="14" fill="#fff">EMILY</text>
+    <text x="30" y="38" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="800" font-size="14" fill="#fff">CARR</text>
+    <text x="30" y="52" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="600" font-size="8" fill="rgba(255,255,255,.7)">UNIVERSITY</text>
+  </svg>
   <div style="font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px">The Library Kiosk</div>
   <div class="text-muted font-light" style="font-size:14px;margin-bottom:32px;max-width:400px">Your library has more than you think.<br>We help you find it.</div>
   <button class="btn btn-primary" style="padding:14px 48px;font-size:15px;border-radius:14px" onclick="showScreen('dashboard')">Get Started</button>
-  <div class="text-dim text-xs mt-16">Emily Carr University of Art + Design</div>
+  <div style="display:flex;align-items:center;gap:8px;margin-top:20px;color:var(--txt3)">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><line x1="2" y1="8" x2="18" y2="8" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="13" r="1" fill="currentColor"/></svg>
+    <span class="text-xs">Tap your ECU Student ID to get started</span>
+  </div>
 </div>
 
 <!-- ========== DASHBOARD ========== -->
@@ -266,7 +275,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
 
 <!-- ========== BOOK DETAIL ========== -->
 <div class="screen" id="s-book-detail">
-  <div class="back-header" onclick="showScreen('results')">
+  <div class="back-header" onclick="goBack('search')">
     <span class="back-arrow">←</span>
     <span class="back-title">Book Detail</span>
   </div>
@@ -302,6 +311,13 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
       </div>
     </div>
   </div>
+  <div class="bottomnav">
+    <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni">🏠</span>Home</div>
+    <div class="nav-item" onclick="showScreen('search')"><span class="ni">🔍</span>Search</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni">🗺️</span>Map</div>
+    <div class="nav-item" onclick="showScreen('community')"><span class="ni">📋</span>Board</div>
+    <div class="nav-item" onclick="showScreen('account')"><span class="ni">👤</span>Account</div>
+  </div>
 </div>
 
 <!-- ========== MAP ========== -->
@@ -317,13 +333,13 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
     <div class="tab" onclick="switchFloor(2,this)">2nd Floor</div>
     <div class="tab" onclick="switchFloor(3,this)">3rd Floor</div>
   </div>
-  <div style="flex:1;display:flex;padding:12px 16px;gap:12px">
-    <div style="flex:1" id="map-container">
+  <div style="flex:1;display:flex;padding:12px 16px;gap:12px;overflow:hidden;min-height:0">
+    <div style="flex:1;min-height:0;min-width:0" id="map-container">
       <div class="map-grid" id="floor-map">
         <!-- Populated by JS -->
       </div>
     </div>
-    <div style="width:160px;display:flex;flex-direction:column;gap:6px;overflow-y:auto">
+    <div style="width:160px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex-shrink:0">
       <div class="section-title">Legend</div>
       <div class="glass" style="padding:8px 10px;font-size:10px;display:flex;flex-direction:column;gap:6px">
         <div class="flex items-center gap-8"><span style="width:10px;height:10px;border-radius:3px;background:rgba(242,0,130,.4);flex-shrink:0"></span>Stacks</div>
@@ -421,7 +437,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <div class="glass2" style="padding:12px;text-align:center;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600" onclick="showScreen('rooms')">📅 Book Study Room</div>
       <div class="glass2" style="padding:12px;text-align:center;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600" onclick="showScreen('help')">💬 Ask a Librarian</div>
-      <div class="glass2" style="padding:12px;text-align:center;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600">📄 Print / Scan</div>
+      <div class="glass2" style="padding:12px;text-align:center;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600" onclick="showScreen('print')">📄 Print / Scan</div>
       <div class="glass2" style="padding:12px;text-align:center;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600" onclick="showScreen('accessibility')">♿ Accessibility</div>
     </div>
   </div>
@@ -450,11 +466,18 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
       <span class="tag tag-blu text-xs" style="cursor:pointer" onclick="quickChat('Talk to a librarian')">Talk to a librarian</span>
     </div>
   </div>
+  <div class="bottomnav">
+    <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni">🏠</span>Home</div>
+    <div class="nav-item" onclick="showScreen('search')"><span class="ni">🔍</span>Search</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni">🗺️</span>Map</div>
+    <div class="nav-item" onclick="showScreen('community')"><span class="ni">📋</span>Board</div>
+    <div class="nav-item" onclick="showScreen('account')"><span class="ni">👤</span>Account</div>
+  </div>
 </div>
 
 <!-- ========== STUDY ROOMS ========== -->
 <div class="screen" id="s-rooms">
-  <div class="back-header" onclick="showScreen('map')">
+  <div class="back-header" onclick="goBack('map')">
     <span class="back-arrow">←</span>
     <span class="back-title">Study Rooms</span>
   </div>
@@ -491,11 +514,18 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
       <div class="text-xs text-muted mt-8">3rd Floor • 4 seats • Booked until 5:30 PM</div>
     </div>
   </div>
+  <div class="bottomnav">
+    <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni">🏠</span>Home</div>
+    <div class="nav-item" onclick="showScreen('search')"><span class="ni">🔍</span>Search</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni">🗺️</span>Map</div>
+    <div class="nav-item" onclick="showScreen('community')"><span class="ni">📋</span>Board</div>
+    <div class="nav-item" onclick="showScreen('account')"><span class="ni">👤</span>Account</div>
+  </div>
 </div>
 
 <!-- ========== ACCESSIBILITY ========== -->
 <div class="screen" id="s-accessibility">
-  <div class="back-header" onclick="goBack()">
+  <div class="back-header" onclick="goBack('dashboard')">
     <span class="back-arrow">←</span>
     <span class="back-title">Accessibility Settings</span>
   </div>
@@ -556,28 +586,92 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
   </div>
 </div>
 
+<!-- ========== PRINT / SCAN ========== -->
+<div class="screen" id="s-print">
+  <div class="back-header" onclick="goBack('account')">
+    <span class="back-arrow">←</span>
+    <span class="back-title">Print & Scan</span>
+  </div>
+  <div class="scrollarea p-20" style="display:flex;flex-direction:column;gap:12px">
+    <div class="section-title">Services</div>
+    <div class="card" style="display:flex;gap:14px;align-items:center">
+      <div style="font-size:28px">🖨️</div>
+      <div style="flex:1">
+        <div class="text-sm font-semi">Print from USB</div>
+        <div class="text-xs text-muted mt-8">B&W $0.10/page • Color $0.25/page</div>
+      </div>
+      <button class="btn btn-primary btn-sm">Start</button>
+    </div>
+    <div class="card" style="display:flex;gap:14px;align-items:center">
+      <div style="font-size:28px">📱</div>
+      <div style="flex:1">
+        <div class="text-sm font-semi">Print from Mobile</div>
+        <div class="text-xs text-muted mt-8">Send to print@ecuad.ca</div>
+      </div>
+      <button class="btn btn-glass btn-sm">Info</button>
+    </div>
+    <div class="card" style="display:flex;gap:14px;align-items:center">
+      <div style="font-size:28px">📄</div>
+      <div style="flex:1">
+        <div class="text-sm font-semi">Scan to Email</div>
+        <div class="text-xs text-muted mt-8">Flatbed or document feeder</div>
+      </div>
+      <button class="btn btn-primary btn-sm">Start</button>
+    </div>
+    <div class="card" style="display:flex;gap:14px;align-items:center">
+      <div style="font-size:28px">📐</div>
+      <div style="flex:1">
+        <div class="text-sm font-semi">Large Format Print</div>
+        <div class="text-xs text-muted mt-8">Posters up to 42" wide • Request at desk</div>
+      </div>
+      <button class="btn btn-glass btn-sm">Request</button>
+    </div>
+    <div class="glass" style="padding:12px 14px">
+      <div class="text-xs text-muted" style="line-height:1.5">Print stations are located on the 1st floor near the main entrance. Your student ID balance is used for printing. Check your balance at any kiosk or at the circulation desk.</div>
+    </div>
+  </div>
+  <div class="bottomnav">
+    <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni">🏠</span>Home</div>
+    <div class="nav-item" onclick="showScreen('search')"><span class="ni">🔍</span>Search</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni">🗺️</span>Map</div>
+    <div class="nav-item" onclick="showScreen('community')"><span class="ni">📋</span>Board</div>
+    <div class="nav-item" onclick="showScreen('account')"><span class="ni">👤</span>Account</div>
+  </div>
+</div>
+
 </div><!-- /kiosk -->
 
 <script>
 // ===== NAV & SCREENS =====
-var history = ['welcome'];
+var navHistory = ['welcome'];
 var currentScreen = 'welcome';
 
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
   var el = document.getElementById('s-' + id);
   if (el) { el.classList.add('active'); }
-  if (id !== currentScreen) { history.push(id); }
+  if (id !== currentScreen) { navHistory.push(id); }
   currentScreen = id;
   resetTimeout();
   // Update bottom nav active states
-  document.querySelectorAll('.bottomnav .nav-item').forEach(n => n.classList.remove('active'));
+  var activeScreen = document.getElementById('s-' + id);
+  if (activeScreen) {
+    var nav = activeScreen.querySelector('.bottomnav');
+    if (nav) {
+      nav.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+      var mapping = {dashboard:'Home',search:'Search',map:'Map',community:'Board',account:'Account'};
+      var label = mapping[id];
+      if (label) {
+        nav.querySelectorAll('.nav-item').forEach(function(n){ if(n.textContent.trim()===label) n.classList.add('active'); });
+      }
+    }
+  }
   if (id === 'search') filterResults();
 }
 
-function goBack() {
-  history.pop();
-  var prev = history[history.length - 1] || 'dashboard';
+function goBack(fallback) {
+  navHistory.pop();
+  var prev = navHistory[navHistory.length - 1] || fallback || 'dashboard';
   showScreen(prev);
 }
 
@@ -668,8 +762,12 @@ function renderFloor(n) {
     var d = document.createElement('div');
     d.className = 'map-zone';
     d.id = 'zone-' + z.id;
-    d.style.cssText = 'grid-area:' + z.span + ';background:' + z.color + ';border:1px solid rgba(255,255,255,.1)';
-    d.innerHTML = z.name;
+    var parts = z.span.split('/');
+    d.style.gridRow = parts[0] + '/' + parts[1];
+    d.style.gridColumn = parts[2] + '/' + parts[3];
+    d.style.background = z.color;
+    d.style.border = '1px solid rgba(255,255,255,.15)';
+    d.textContent = z.name.replace(/\\n/g, '\n');
     map.appendChild(d);
   });
 }
