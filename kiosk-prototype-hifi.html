@@ -261,7 +261,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
   <div class="content" style="display:flex;flex-direction:column">
     <div style="padding:16px 20px 0;display:flex;flex-direction:column;gap:12px">
       <div style="position:relative">
-        <input class="input" id="search-input" placeholder="Search books, journals, media..." style="padding-left:36px" oninput="filterResults()">
+        <input class="input" id="search-input" placeholder="Search books, journals, media..." style="padding-left:36px" oninput="filterResults()" onfocus="showOsk()" readonly>
         <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--txt3)">🔍</span>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -316,6 +316,7 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
       <div class="osk-key wide" onclick="oskToggleNum()">123</div>
       <div class="osk-key space" onclick="oskType(' ')">space</div>
       <div class="osk-key accent wide" onclick="oskSearch()">Search</div>
+      <div class="osk-key wide" onclick="hideOsk()" style="font-size:11px">Hide ⌨</div>
     </div>
   </div>
   <div class="bottomnav">
@@ -1061,6 +1062,12 @@ function updateOskKeys() {
 function oskSearch() {
   var input = document.getElementById('search-input');
   if (input && input.value.trim()) filterResults();
+}
+function hideOsk() {
+  document.getElementById('osk').classList.remove('show');
+}
+function showOsk() {
+  document.getElementById('osk').classList.add('show');
 }
 function oskToggleNum() {
   var btn = event.target;
