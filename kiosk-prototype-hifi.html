@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=800, initial-scale=1">
+<title>ECUAD Library Kiosk — Hi-Fi Prototype</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --mag:#f20082;--yel:#eddb00;--grn:#00b082;--blu:#2b2678;--org:#ff8500;
+  --glass:rgba(255,255,255,.07);--glass2:rgba(255,255,255,.12);--glass3:rgba(255,255,255,.18);
+  --border:rgba(255,255,255,.12);--border2:rgba(255,255,255,.2);
+  --bg:#0c0c18;--bg2:#12122a;--txt:#f0f0f5;--txt2:rgba(240,240,245,.7);--txt3:rgba(240,240,245,.45);
+  --blur:blur(24px);--r:16px;--r2:12px;--r3:8px;
+  --shadow:0 8px 32px rgba(0,0,0,.4);
+}
+html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;background:#000;display:flex;justify-content:center;align-items:center;overflow:hidden;color:var(--txt)}
+.kiosk{width:800px;height:480px;background:var(--bg);position:relative;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.6)}
+.kiosk::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 0%,rgba(242,0,130,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(0,176,130,.06) 0%,transparent 50%);pointer-events:none;z-index:0}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;z-index:1;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Glass panels */
+.glass{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--border);border-radius:var(--r)}
+.glass2{background:var(--glass2);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--border2);border-radius:var(--r2)}
+.glass3{background:var(--glass3);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--border2);border-radius:var(--r3)}
+
+/* Top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;height:52px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.topbar .logo{font-weight:700;font-size:15px;letter-spacing:-.3px}
+.topbar .logo span{color:var(--mag)}
+.topbar-icons{display:flex;gap:8px}
+.topbar-icon{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--glass2);border:1px solid var(--border);cursor:pointer;font-size:16px;transition:all .2s}
+.topbar-icon:hover{background:var(--glass3);border-color:var(--border2)}
+
+/* Bottom nav */
+.bottomnav{display:flex;height:56px;flex-shrink:0;border-top:1px solid var(--border);background:rgba(12,12,24,.8);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:all .2s;color:var(--txt3);font-size:10px;font-weight:500}
+.nav-item.active,.nav-item:hover{color:var(--mag)}
+.nav-item .ni{font-size:20px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 20px;border-radius:var(--r3);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--mag);color:#fff;box-shadow:0 4px 16px rgba(242,0,130,.3)}
+.btn-primary:hover{background:#d4006f;transform:translateY(-1px)}
+.btn-glass{background:var(--glass2);color:var(--txt);border:1px solid var(--border2);backdrop-filter:var(--blur)}
+.btn-glass:hover{background:var(--glass3)}
+.btn-sm{padding:7px 14px;font-size:12px;border-radius:6px}
+
+/* Inputs */
+.input{width:100%;padding:10px 14px;background:var(--glass);border:1px solid var(--border);border-radius:var(--r3);color:var(--txt);font-family:inherit;font-size:13px;outline:none;transition:border .2s}
+.input:focus{border-color:var(--mag)}
+.input::placeholder{color:var(--txt3)}
+
+/* Tags & chips */
+.tag{display:inline-flex;align-items:center;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;gap:4px}
+.tag-mag{background:rgba(242,0,130,.15);color:#ff4da6;border:1px solid rgba(242,0,130,.25)}
+.tag-grn{background:rgba(0,176,130,.15);color:#33d4a8;border:1px solid rgba(0,176,130,.25)}
+.tag-blu{background:rgba(43,38,120,.3);color:#8b87d4;border:1px solid rgba(43,38,120,.4)}
+.tag-yel{background:rgba(237,219,0,.12);color:#d4c800;border:1px solid rgba(237,219,0,.2)}
+.tag-org{background:rgba(255,133,0,.12);color:#ff9f33;border:1px solid rgba(255,133,0,.2)}
+
+/* Scrollable */
+.scrollarea{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.scrollarea::-webkit-scrollbar{display:none}
+
+/* Content area */
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+/* Cards */
+.card{background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:14px;cursor:pointer;transition:all .2s}
+.card:hover{background:var(--glass2);border-color:var(--border2);transform:translateY(-1px)}
+
+/* Utility */
+.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-between{justify-content:space-between}
+.gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}
+.p-20{padding:20px}.p-24{padding:24px}
+.text-sm{font-size:12px}.text-xs{font-size:11px}.text-lg{font-size:18px}.text-xl{font-size:22px}
+.font-bold{font-weight:700}.font-semi{font-weight:600}.font-light{font-weight:300}
+.text-muted{color:var(--txt2)}.text-dim{color:var(--txt3)}
+.w-full{width:100%}
+.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}
+
+/* Section headers */
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--txt3);margin-bottom:10px}
+
+/* Back header */
+.back-header{display:flex;align-items:center;gap:10px;padding:12px 24px;height:52px;flex-shrink:0;border-bottom:1px solid var(--border);cursor:pointer}
+.back-header:hover .back-arrow{color:var(--mag)}
+.back-arrow{font-size:18px;color:var(--txt2);transition:color .2s}
+.back-title{font-size:15px;font-weight:700}
+
+/* Tab bar */
+.tabs{display:flex;gap:2px;padding:0 20px;border-bottom:1px solid var(--border)}
+.tab{padding:10px 16px;font-size:12px;font-weight:600;color:var(--txt3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab.active{color:var(--mag);border-bottom-color:var(--mag)}
+.tab:hover{color:var(--txt2)}
+
+/* Map grid */
+.map-grid{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(3,1fr);gap:4px;height:100%;padding:4px}
+.map-zone{border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;text-align:center;line-height:1.2;padding:2px;transition:all .3s}
+.map-zone.highlight{animation:pulse 1.5s ease infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(242,0,130,.3)}50%{box-shadow:0 0 0 8px rgba(242,0,130,0)}}
+
+/* Keyboard hint */
+.kbd{display:inline-flex;padding:2px 6px;background:var(--glass2);border:1px solid var(--border);border-radius:4px;font-size:10px;font-weight:600;color:var(--txt3)}
+
+/* Progress dots */
+.dots{display:flex;gap:6px;justify-content:center}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--glass2);border:1px solid var(--border);transition:all .3s}
+.dot.active{background:var(--mag);border-color:var(--mag);box-shadow:0 0 8px rgba(242,0,130,.4)}
+
+/* Inactivity overlay */
+#timeout-overlay{position:absolute;inset:0;background:rgba(12,12,24,.92);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;cursor:pointer}
+#timeout-overlay.show{display:flex}
+</style>
+</head>
+<body>
+<div class="kiosk" id="kiosk">
+
+<!-- ========== TIMEOUT OVERLAY ========== -->
+<div id="timeout-overlay" onclick="resetTimeout();showScreen('welcome')">
+  <div style="font-size:44px;margin-bottom:16px">📚</div>
+  <div style="font-size:22px;font-weight:700;margin-bottom:8px">Tap to Begin</div>
+  <div class="text-muted text-sm">ECUAD Library Kiosk</div>
+</div>
+
+<!-- ========== WELCOME ========== -->
+<div class="screen active" id="s-welcome" style="align-items:center;justify-content:center;text-align:center;padding:40px">
+  <div style="font-size:48px;margin-bottom:8px">📚</div>
+  <div style="font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px">The Library Kiosk</div>
+  <div class="text-muted font-light" style="font-size:14px;margin-bottom:32px;max-width:400px">Your library has more than you think.<br>We help you find it.</div>
+  <button class="btn btn-primary" style="padding:14px 48px;font-size:15px;border-radius:14px" onclick="showScreen('dashboard')">Get Started</button>
+  <div class="text-dim text-xs mt-16">Emily Carr University of Art + Design</div>
+</div>
+
+<!-- ========== DASHBOARD ========== -->
+<div class="screen" id="s-dashboard">
+  <div class="topbar">
+    <div class="logo">ECU <span>Library</span></div>
+    <div class="topbar-icons">
+      <div class="topbar-icon" onclick="showScreen('accessibility')">♿</div>
+      <div class="topbar-icon" onclick="showScreen('account')">👤</div>
+    </div>
+  </div>
+  <div class="content scrollarea p-20" style="gap:16px;display:flex;flex-direction:column">
+    <!-- Search bar -->
+    <div style="position:relative" onclick="showScreen('search')">
+      <input class="input" placeholder="Search books, resources, rooms..." readonly style="cursor:pointer;padding-left:36px">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--txt3)">🔍</span>
+    </div>
+
+    <!-- Quick actions -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+      <div class="glass2" style="padding:14px 8px;text-align:center;border-radius:14px;cursor:pointer" onclick="showScreen('search')">
+        <div style="font-size:24px;margin-bottom:6px">🔍</div>
+        <div style="font-size:11px;font-weight:600">Search</div>
+      </div>
+      <div class="glass2" style="padding:14px 8px;text-align:center;border-radius:14px;cursor:pointer" onclick="showScreen('map')">
+        <div style="font-size:24px;margin-bottom:6px">🗺️</div>
+        <div style="font-size:11px;font-weight:600">Map</div>
+      </div>
+      <div class="glass2" style="padding:14px 8px;text-align:center;border-radius:14px;cursor:pointer" onclick="showScreen('community')">
+        <div style="font-size:24px;margin-bottom:6px">📋</div>
+        <div style="font-size:11px;font-weight:600">Board</div>
+      </div>
+      <div class="glass2" style="padding:14px 8px;text-align:center;border-radius:14px;cursor:pointer" onclick="showScreen('help')">
+        <div style="font-size:24px;margin-bottom:6px">💬</div>
+        <div style="font-size:11px;font-weight:600">Help</div>
+      </div>
+    </div>
+
+    <!-- Hours & status -->
+    <div class="glass" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div class="text-sm font-semi">Library Hours Today</div>
+        <div class="text-xs text-muted mt-8">Mon–Fri 8 AM – 9 PM</div>
+      </div>
+      <span class="tag tag-grn">Open Now</span>
+    </div>
+
+    <!-- Popular right now -->
+    <div>
+      <div class="section-title">Popular Right Now</div>
+      <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">
+        <div class="glass2" style="min-width:140px;padding:12px;border-radius:12px;cursor:pointer" onclick="showScreen('book-detail')">
+          <div style="width:100%;height:70px;background:linear-gradient(135deg,rgba(242,0,130,.2),rgba(43,38,120,.3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:8px">📕</div>
+          <div class="text-xs font-semi" style="line-height:1.3">Design of Everyday Things</div>
+          <div class="text-xs text-dim" style="margin-top:2px">Don Norman</div>
+        </div>
+        <div class="glass2" style="min-width:140px;padding:12px;border-radius:12px;cursor:pointer" onclick="showScreen('book-detail')">
+          <div style="width:100%;height:70px;background:linear-gradient(135deg,rgba(0,176,130,.2),rgba(43,38,120,.3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:8px">📗</div>
+          <div class="text-xs font-semi" style="line-height:1.3">Interaction of Color</div>
+          <div class="text-xs text-dim" style="margin-top:2px">Josef Albers</div>
+        </div>
+        <div class="glass2" style="min-width:140px;padding:12px;border-radius:12px;cursor:pointer" onclick="showScreen('book-detail')">
+          <div style="width:100%;height:70px;background:linear-gradient(135deg,rgba(255,133,0,.2),rgba(43,38,120,.3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:8px">📘</div>
+          <div class="text-xs font-semi" style="line-height:1.3">Thinking with Type</div>
+          <div class="text-xs text-dim" style="margin-top:2px">Ellen Lupton</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bottomnav">
+    <div class="nav-item active" onclick="showScreen('dashboard')"><span class="ni">🏠</span>Home</div>
+    <div class="nav-item" onclick="showScreen('search')"><span class="ni">🔍</span>Search</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni">🗺️</span>Map</div>
+    <div class="nav-item" onclick="showScreen('community')"><span class="ni">📋</span>Board</div>
+    <div class="nav-item" onclick="showScreen('account')"><span class="ni">👤</span>Account</div>
+  </div>
+</div>
+
+<!-- ========== SEARCH ========== -->
+<div class="screen" id="s-search">
+  <div class="topbar">
+    <div class="logo">ECU <span>Library</span></div>
+    <div class="topbar-icons">
+      <div class="topbar-icon" onclick="showScreen('accessibility')">♿</div>
+    </div>
+  </div>
+  <div class="content" style="display:flex;flex-direction:column">
+    <div style="padding:16px 20px 0;display:flex;flex-direction:column;gap:12px">
+      <div style="position:relative">
+        <input class="input" id="search-input" placeholder="Search books, journals, media..." style="padding-left:36px" oninput="filterResults()">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--txt3)">🔍</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="tag tag-mag" style="cursor:pointer" onclick="setSearch('design')">Design</span>
+        <span class="tag tag-grn" style="cursor:pointer" onclick="setSearch('typography')">Typography</span>
+        <span class="tag tag-blu" style="cursor:pointer" onclick="setSearch('illustration')">Illustration</span>
+        <span class="tag tag-yel" style="cursor:pointer" onclick="setSearch('film')">Film & Media</span>
+        <span class="tag tag-org" style="cursor:pointer" onclick="setSearch('ceramics')">Ceramics</span>
+      </div>
+    </div>
+    <div class="scrollarea" style="padding:12px 20px;display:flex;flex-direction:column;gap:8px" id="results-list">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+  <div class="bottomnav">
+    <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni">🏠</span>Home</div>
+    <div class="nav-item active" onclick="showScreen('search')"><span class="ni">🔍</span>Search</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni">🗺️</span>Map</div>
+    <div class="nav-item" onclick="showScreen('community')"><span class="ni">📋</span>Board</div>
+    <div class="nav-item" onclick="showScreen('account')"><span class="ni">👤</span>Account</div>
+  </div>
+</div>
+
+<!-- ========== RESULTS ========== -->
+<div class="screen" id="s-results">
+  <div class="back-header" onclick="showScreen('search')">
+    <span class="back-arrow">←</span>
+    <span class="back-title" id="results-title">Search Results</span>
+  </div>
+  <div class="scrollarea p-20" style="display:flex;flex-direction:column;gap:8px" id="results-detail">
+  </div>
+  <div class="bottomnav">
+    <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni">🏠</span>Home</div>
+    <div class="nav-item active"><span class="ni">🔍</span>Search</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni">🗺️</span>Map</div>
+    <div class="nav-item" onclick="showScreen('community')"><span class="ni">📋</span>Board</div>
+    <div class="nav-item" onclick="showScreen('account')"><span class="ni">👤</span>Account</div>
+  </div>
+</div>
+
+<!-- ========== BOOK DETAIL ========== -->
+<div class="screen" id="s-book-detail">
+  <div class="back-header" onclick="showScreen('results')">
+    <span class="back-arrow">←</span>
+    <span class="back-title">Book Detail</span>
+  </div>
+  <div class="scrollarea" style="display:flex;flex-direction:column">
+    <div style="display:flex;gap:16px;padding:16px 20px">
+      <div style="width:100px;height:140px;background:linear-gradient(135deg,rgba(242,0,130,.25),rgba(43,38,120,.4));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0">📕</div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:17px;font-weight:700;line-height:1.3" id="detail-title">The Design of Everyday Things</div>
+        <div class="text-sm text-muted" id="detail-author">Don Norman</div>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <span class="tag tag-grn text-xs">Available</span>
+          <span class="tag tag-blu text-xs">2nd Floor</span>
+        </div>
+        <div class="text-xs text-dim mt-8" id="detail-call">Call #: NK1510 .N67 2013</div>
+      </div>
+    </div>
+    <div style="padding:0 20px;display:flex;gap:8px">
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="showScreen('success')">Check Out</button>
+      <button class="btn btn-glass btn-sm" style="flex:1" onclick="showScreen('map');highlightZone('B2')">Find on Map</button>
+    </div>
+    <div style="padding:16px 20px">
+      <div class="section-title">About This Book</div>
+      <div class="text-sm text-muted" style="line-height:1.6">A foundational text on human-centered design, exploring how everyday objects can frustrate or delight. Essential reading for anyone interested in usability, interaction design, and the psychology behind how people use things.</div>
+    </div>
+    <div style="padding:0 20px 16px">
+      <div class="section-title">Details</div>
+      <div class="glass" style="padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+        <div class="flex justify-between"><span class="text-xs text-dim">ISBN</span><span class="text-xs">978-0465050659</span></div>
+        <div class="flex justify-between"><span class="text-xs text-dim">Publisher</span><span class="text-xs">Basic Books</span></div>
+        <div class="flex justify-between"><span class="text-xs text-dim">Year</span><span class="text-xs">2013</span></div>
+        <div class="flex justify-between"><span class="text-xs text-dim">Pages</span><span class="text-xs">368</span></div>
+        <div class="flex justify-between"><span class="text-xs text-dim">Location</span><span class="text-xs">2nd Floor — Shelf B2</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MAP ========== -->
+<div class="screen" id="s-map">
+  <div class="topbar">
+    <div class="logo">ECU <span>Library</span> — Floor Map</div>
+    <div class="topbar-icons">
+      <div class="topbar-icon" onclick="showScreen('dashboard')">✕</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchFloor(1,this)">1st Floor</div>
+    <div class="tab" onclick="switchFloor(2,this)">2nd Floor</div>
+    <div class="tab" onclick="switchFloor(3,this)">3rd Floor</div>
+  </div>
+  <div style="flex:1;display:flex;padding:12px 16px;gap:12px">
+    <div style="flex:1" id="map-container">
+      <div class="map-grid" id="floor-map">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    <div style="width:160px;display:flex;flex-direction:column;gap:6px;overflow-y:auto">
+      <div class="section-title">Legend</div>
+      <div class="glass" style="padding:8px 10px;font-size:10px;display:flex;flex-direction:column;gap:6px">
+        <div class="flex items-center gap-8"><span style="width:10px;height:10px;border-radius:3px;background:rgba(242,0,130,.4);flex-shrink:0"></span>Stacks</div>
+        <div class="flex items-center gap-8"><span style="width:10px;height:10px;border-radius:3px;background:rgba(0,176,130,.4);flex-shrink:0"></span>Study</div>
+        <div class="flex items-center gap-8"><span style="width:10px;height:10px;border-radius:3px;background:rgba(237,219,0,.4);flex-shrink:0"></span>Media</div>
+        <div class="flex items-center gap-8"><span style="width:10px;height:10px;border-radius:3px;background:rgba(43,38,120,.4);flex-shrink:0"></span>Services</div>
+        <div class="flex items-center gap-8"><span style="width:10px;height:10px;border-radius:3px;background:rgba(255,133,0,.4);flex-shrink:0"></span>Entrance</div>
+      </div>
+      <div class="glass" style="padding:8px 10px;font-size:10px;cursor:pointer" onclick="showScreen('rooms')">
+        <div class="font-semi">Study Rooms</div>
+        <div class="text-dim" style="margin-top:2px">3 available now →</div>
+      </div>
+    </div>
+  </div>
+  <div class="bottomnav">
+    <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni">🏠</span>Home</div>
+    <div class="nav-item" onclick="showScreen('search')"><span class="ni">🔍</span>Search</div>
+    <div class="nav-item active"><span class="ni">🗺️</span>Map</div>
+    <div class="nav-item" onclick="showScreen('community')"><span class="ni">📋</span>Board</div>
+    <div class="nav-item" onclick="showScreen('account')"><span class="ni">👤</span>Account</div>
+  </div>
+</div>
+
+<!-- ========== COMMUNITY BOARD ========== -->
+<div class="screen" id="s-community">
+  <div class="topbar">
+    <div class="logo">Community <span>Board</span></div>
+    <div class="topbar-icons">
+      <div class="topbar-icon" onclick="showScreen('dashboard')">✕</div>
+    </div>
+  </div>
+  <div class="tabs" id="comm-tabs">
+    <div class="tab active" onclick="switchCommTab('events',this)">Events</div>
+    <div class="tab" onclick="switchCommTab('exchange',this)">Exchange</div>
+    <div class="tab" onclick="switchCommTab('groups',this)">Groups</div>
+    <div class="tab" onclick="switchCommTab('lost',this)">Lost & Found</div>
+  </div>
+  <div class="scrollarea p-20" id="comm-content">
+    <!-- Populated by JS -->
+  </div>
+  <div class="bottomnav">
+    <div class="nav-item" onclick="showScreen('dashboard')"><span class="ni">🏠</span>Home</div>
+    <div class="nav-item" onclick="showScreen('search')"><span class="ni">🔍</span>Search</div>
+    <div class="nav-item" onclick="showScreen('map')"><span class="ni">🗺️</span>Map</div>
+    <div class="nav-item active"><span class="ni">📋</span>Board</div>
+    <div class="nav-item" onclick="showScreen('account')"><span class="ni">👤</span>Account</div>
+  </div>
+</div>
+
+<!-- ========== ACCOUNT ========== -->
+<div class="screen" id="s-account">
+  <div class="back-header" onclick="showScreen('dashboard')">
+    <span class="back-arrow">←</span>
+    <span class="back-title">My Account</span>
+  </div>
+  <div class="scrollarea p-20" style="display:flex;flex-direction:column;gap:12px">
+    <div class="glass" style="padding:16px;display:flex;align-items:center;gap:14px">
+      <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--mag),var(--blu));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700">P</div>
+      <div>
+        <div class="font-semi">Priya Chakraborty</div>
+        <div class="text-xs text-muted">Industrial Design — Year 3</div>
+        <div class="text-xs text-dim">Student ID: 2024-1847</div>
+      </div>
+    </div>
+    <div class="section-title">Checked Out (2)</div>
+    <div class="card" onclick="showScreen('book-detail')">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-sm font-semi">Designing Interactions</div>
+          <div class="text-xs text-muted">Bill Moggridge</div>
+        </div>
+        <span class="tag tag-org text-xs">Due Apr 12</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-sm font-semi">Speculative Everything</div>
+          <div class="text-xs text-muted">Dunne & Raby</div>
+        </div>
+        <span class="tag tag-grn text-xs">Due Apr 20</span>
+      </div>
+    </div>
+    <div class="section-title mt-8">Holds (1)</div>
+    <div class="card">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-sm font-semi">Material Innovation</div>
+          <div class="text-xs text-muted">Andrew Dent</div>
+        </div>
+        <span class="tag tag-yel text-xs">Position #2</span>
+      </div>
+    </div>
+    <div class="section-title mt-8">Quick Links</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="glass2" style="padding:12px;text-align:center;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600" onclick="showScreen('rooms')">📅 Book Study Room</div>
+      <div class="glass2" style="padding:12px;text-align:center;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600" onclick="showScreen('help')">💬 Ask a Librarian</div>
+      <div class="glass2" style="padding:12px;text-align:center;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600">📄 Print / Scan</div>
+      <div class="glass2" style="padding:12px;text-align:center;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600" onclick="showScreen('accessibility')">♿ Accessibility</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== HELP / ASK A LIBRARIAN ========== -->
+<div class="screen" id="s-help">
+  <div class="back-header" onclick="showScreen('dashboard')">
+    <span class="back-arrow">←</span>
+    <span class="back-title">Ask a Librarian</span>
+  </div>
+  <div style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <div class="scrollarea" style="padding:16px 20px;display:flex;flex-direction:column;gap:10px" id="chat-messages">
+      <div class="glass" style="padding:10px 14px;align-self:flex-start;max-width:75%;border-radius:14px 14px 14px 4px">
+        <div class="text-sm" style="line-height:1.5">Hi! I'm the Library Assistant. I can help you find resources, navigate the library, or connect you with a librarian. What do you need?</div>
+        <div class="text-xs text-dim" style="margin-top:4px">Library Bot</div>
+      </div>
+    </div>
+    <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0">
+      <input class="input" id="chat-input" placeholder="Type your question..." onkeydown="if(event.key==='Enter')sendChat()" style="flex:1">
+      <button class="btn btn-primary btn-sm" onclick="sendChat()">Send</button>
+    </div>
+    <div style="padding:0 16px 10px;display:flex;gap:6px;flex-wrap:wrap">
+      <span class="tag tag-mag text-xs" style="cursor:pointer" onclick="quickChat('How do I find a book?')">How do I find a book?</span>
+      <span class="tag tag-grn text-xs" style="cursor:pointer" onclick="quickChat('Where are study rooms?')">Study rooms?</span>
+      <span class="tag tag-blu text-xs" style="cursor:pointer" onclick="quickChat('Talk to a librarian')">Talk to a librarian</span>
+    </div>
+  </div>
+</div>
+
+<!-- ========== STUDY ROOMS ========== -->
+<div class="screen" id="s-rooms">
+  <div class="back-header" onclick="showScreen('map')">
+    <span class="back-arrow">←</span>
+    <span class="back-title">Study Rooms</span>
+  </div>
+  <div class="scrollarea p-20" style="display:flex;flex-direction:column;gap:10px">
+    <div class="section-title">Available Now</div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div class="text-sm font-semi">Room 201 — Quiet Study</div>
+        <div class="text-xs text-muted mt-8">2nd Floor • 4 seats • Whiteboard</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="showScreen('success')">Book</button>
+    </div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div class="text-sm font-semi">Room 305 — Group Work</div>
+        <div class="text-xs text-muted mt-8">3rd Floor • 8 seats • Screen + Whiteboard</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="showScreen('success')">Book</button>
+    </div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div class="text-sm font-semi">Room 102 — Media Pod</div>
+        <div class="text-xs text-muted mt-8">1st Floor • 2 seats • AV Equipment</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="showScreen('success')">Book</button>
+    </div>
+    <div class="section-title mt-8">Booked</div>
+    <div class="card" style="opacity:.5">
+      <div class="text-sm font-semi">Room 202 — Seminar</div>
+      <div class="text-xs text-muted mt-8">2nd Floor • 12 seats • Booked until 4:00 PM</div>
+    </div>
+    <div class="card" style="opacity:.5">
+      <div class="text-sm font-semi">Room 301 — Quiet Study</div>
+      <div class="text-xs text-muted mt-8">3rd Floor • 4 seats • Booked until 5:30 PM</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ACCESSIBILITY ========== -->
+<div class="screen" id="s-accessibility">
+  <div class="back-header" onclick="goBack()">
+    <span class="back-arrow">←</span>
+    <span class="back-title">Accessibility Settings</span>
+  </div>
+  <div class="scrollarea p-20" style="display:flex;flex-direction:column;gap:14px">
+    <div class="glass" style="padding:14px 16px">
+      <div class="flex justify-between items-center">
+        <div><div class="text-sm font-semi">Large Text</div><div class="text-xs text-muted mt-8">Increase font sizes throughout</div></div>
+        <div class="toggle" id="tog-text" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></div>
+      </div>
+    </div>
+    <div class="glass" style="padding:14px 16px">
+      <div class="flex justify-between items-center">
+        <div><div class="text-sm font-semi">High Contrast</div><div class="text-xs text-muted mt-8">Stronger borders and colors</div></div>
+        <div class="toggle" id="tog-contrast" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></div>
+      </div>
+    </div>
+    <div class="glass" style="padding:14px 16px">
+      <div class="flex justify-between items-center">
+        <div><div class="text-sm font-semi">Screen Reader Mode</div><div class="text-xs text-muted mt-8">Optimize for assistive technology</div></div>
+        <div class="toggle" id="tog-reader" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></div>
+      </div>
+    </div>
+    <div class="glass" style="padding:14px 16px">
+      <div class="flex justify-between items-center">
+        <div><div class="text-sm font-semi">Reduce Motion</div><div class="text-xs text-muted mt-8">Minimize animations</div></div>
+        <div class="toggle" id="tog-motion" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></div>
+      </div>
+    </div>
+    <div class="section-title mt-8">Language</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <div class="glass2" style="padding:10px;text-align:center;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;border:2px solid var(--mag)">English</div>
+      <div class="glass2" style="padding:10px;text-align:center;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer">Fran&ccedil;ais</div>
+      <div class="glass2" style="padding:10px;text-align:center;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer">中文</div>
+    </div>
+  </div>
+</div>
+<style>
+.toggle{width:44px;height:26px;background:var(--glass2);border:1px solid var(--border);border-radius:13px;position:relative;cursor:pointer;transition:all .3s;flex-shrink:0}
+.toggle.on{background:rgba(242,0,130,.3);border-color:var(--mag)}
+.toggle-knob{width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .3s;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+.toggle.on .toggle-knob{transform:translateX(18px)}
+</style>
+
+<!-- ========== SUCCESS / FEEDBACK ========== -->
+<div class="screen" id="s-success" style="align-items:center;justify-content:center;text-align:center;padding:40px">
+  <div style="width:80px;height:80px;border-radius:50%;background:rgba(0,176,130,.15);border:2px solid rgba(0,176,130,.3);display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:16px">✓</div>
+  <div style="font-size:22px;font-weight:700;margin-bottom:6px">Success!</div>
+  <div class="text-muted text-sm" style="max-width:300px;margin-bottom:24px" id="success-msg">Your action has been completed. Check your student email for confirmation.</div>
+  <div style="display:flex;flex-direction:column;gap:10px;width:240px">
+    <div class="section-title" style="margin-bottom:0">How was your experience?</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <div class="glass2" style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer" onclick="this.style.background='rgba(242,0,130,.2)';this.style.borderColor='var(--mag)'">😍</div>
+      <div class="glass2" style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer" onclick="this.style.background='rgba(0,176,130,.2)';this.style.borderColor='var(--grn)'">😊</div>
+      <div class="glass2" style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer" onclick="this.style.background='rgba(237,219,0,.2)';this.style.borderColor='var(--yel)'">😐</div>
+      <div class="glass2" style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer" onclick="this.style.background='rgba(255,133,0,.2)';this.style.borderColor='var(--org)'">😕</div>
+    </div>
+    <button class="btn btn-glass w-full mt-8" onclick="showScreen('dashboard')">Back to Home</button>
+  </div>
+</div>
+
+</div><!-- /kiosk -->
+
+<script>
+// ===== NAV & SCREENS =====
+var history = ['welcome'];
+var currentScreen = 'welcome';
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  var el = document.getElementById('s-' + id);
+  if (el) { el.classList.add('active'); }
+  if (id !== currentScreen) { history.push(id); }
+  currentScreen = id;
+  resetTimeout();
+  // Update bottom nav active states
+  document.querySelectorAll('.bottomnav .nav-item').forEach(n => n.classList.remove('active'));
+  if (id === 'search') filterResults();
+}
+
+function goBack() {
+  history.pop();
+  var prev = history[history.length - 1] || 'dashboard';
+  showScreen(prev);
+}
+
+// ===== SEARCH DATA =====
+var books = [
+  {title:"The Design of Everyday Things",author:"Don Norman",call:"NK1510 .N67 2013",loc:"2nd Floor — B2",avail:true,tags:["design","ux"]},
+  {title:"Interaction of Color",author:"Josef Albers",call:"ND1488 .A4 2013",loc:"2nd Floor — A3",avail:true,tags:["design","color"]},
+  {title:"Thinking with Type",author:"Ellen Lupton",call:"Z246 .L87 2010",loc:"1st Floor — C1",avail:true,tags:["typography","design"]},
+  {title:"Grid Systems in Graphic Design",author:"Josef Muller-Brockmann",call:"NC997 .M8413",loc:"2nd Floor — B1",avail:false,tags:["typography","design"]},
+  {title:"Graphic Design: The New Basics",author:"Ellen Lupton & Jennifer Cole Phillips",call:"NC997 .L868",loc:"1st Floor — C2",avail:true,tags:["design"]},
+  {title:"Ways of Seeing",author:"John Berger",call:"N7477 .B45",loc:"3rd Floor — D1",avail:true,tags:["film","art"]},
+  {title:"Understanding Comics",author:"Scott McCloud",call:"PN6710 .M33",loc:"1st Floor — A1",avail:true,tags:["illustration","comics"]},
+  {title:"Handmade Electronic Music",author:"Nicolas Collins",call:"ML1092 .C65",loc:"3rd Floor — E2",avail:true,tags:["media"]},
+  {title:"The Ceramics Bible",author:"Louisa Taylor",call:"TT920 .T39",loc:"2nd Floor — D2",avail:true,tags:["ceramics"]},
+  {title:"Designing Interactions",author:"Bill Moggridge",call:"QA76.9 .H85",loc:"2nd Floor — B3",avail:false,tags:["design","ux"]},
+  {title:"Speculative Everything",author:"Anthony Dunne & Fiona Raby",call:"NK1510 .D86",loc:"2nd Floor — B2",avail:false,tags:["design"]},
+  {title:"Material Innovation",author:"Andrew Dent & Leslie Sherr",call:"TA403.6 .D46",loc:"1st Floor — C3",avail:true,tags:["design","materials"]},
+];
+
+function filterResults() {
+  var q = (document.getElementById('search-input').value || '').toLowerCase();
+  var list = document.getElementById('results-list');
+  list.innerHTML = '';
+  var filtered = books.filter(b => !q || b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q) || b.tags.some(t => t.includes(q)));
+  filtered.forEach(function(b) {
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.style.cssText = 'display:flex;justify-content:space-between;align-items:center';
+    card.innerHTML = '<div><div class="text-sm font-semi">' + b.title + '</div><div class="text-xs text-muted" style="margin-top:2px">' + b.author + ' — ' + b.loc + '</div></div><span class="tag ' + (b.avail ? 'tag-grn' : 'tag-org') + ' text-xs">' + (b.avail ? 'Available' : 'Checked Out') + '</span>';
+    card.onclick = function() {
+      document.getElementById('detail-title').textContent = b.title;
+      document.getElementById('detail-author').textContent = b.author;
+      document.getElementById('detail-call').textContent = 'Call #: ' + b.call;
+      showScreen('book-detail');
+    };
+    list.appendChild(card);
+  });
+  if (!filtered.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--txt3)"><div style="font-size:32px;margin-bottom:8px">🔍</div><div class="text-sm">No results found</div></div>';
+  }
+}
+
+function setSearch(q) {
+  document.getElementById('search-input').value = q;
+  filterResults();
+}
+
+// ===== MAP =====
+var floors = {
+  1: [
+    {id:'A1',name:'Comics &\nGraphic Novels',color:'rgba(242,0,130,.25)',span:'1/2/1/3'},
+    {id:'B1',name:'Circulation\nDesk',color:'rgba(43,38,120,.35)',span:'1/2/3/5'},
+    {id:'C1',name:'Typography\nCollection',color:'rgba(242,0,130,.25)',span:'1/2/5/6'},
+    {id:'D1',name:'New\nArrivals',color:'rgba(0,176,130,.25)',span:'2/3/1/3'},
+    {id:'E1',name:'Computer\nStations',color:'rgba(237,219,0,.25)',span:'2/3/3/5'},
+    {id:'F1',name:'Media\nPod 102',color:'rgba(237,219,0,.25)',span:'2/3/5/6'},
+    {id:'G1',name:'Main\nEntrance',color:'rgba(255,133,0,.35)',span:'3/4/1/4'},
+    {id:'H1',name:'Self\nCheckout',color:'rgba(43,38,120,.35)',span:'3/4/4/6'},
+  ],
+  2: [
+    {id:'A2',name:'Design\nStacks A',color:'rgba(242,0,130,.25)',span:'1/2/1/3'},
+    {id:'B2',name:'Design\nStacks B',color:'rgba(242,0,130,.25)',span:'1/2/3/5'},
+    {id:'C2',name:'Periodicals',color:'rgba(237,219,0,.25)',span:'1/2/5/6'},
+    {id:'D2',name:'Ceramics &\nCraft',color:'rgba(242,0,130,.25)',span:'2/3/1/3'},
+    {id:'E2',name:'Study\nRoom 201',color:'rgba(0,176,130,.25)',span:'2/3/3/4'},
+    {id:'F2',name:'Study\nRoom 202',color:'rgba(0,176,130,.25)',span:'2/3/4/5'},
+    {id:'G2',name:'Quiet\nZone',color:'rgba(0,176,130,.25)',span:'2/3/5/6'},
+    {id:'H2',name:'Elevator',color:'rgba(43,38,120,.35)',span:'3/4/1/2'},
+    {id:'I2',name:'Reading\nLounge',color:'rgba(0,176,130,.25)',span:'3/4/2/4'},
+    {id:'J2',name:'Staff\nArea',color:'rgba(43,38,120,.35)',span:'3/4/4/6'},
+  ],
+  3: [
+    {id:'A3',name:'Special\nCollections',color:'rgba(242,0,130,.25)',span:'1/2/1/3'},
+    {id:'B3',name:'Archives',color:'rgba(242,0,130,.25)',span:'1/2/3/5'},
+    {id:'C3',name:'Film &\nMedia',color:'rgba(237,219,0,.25)',span:'1/2/5/6'},
+    {id:'D3',name:'Group\nRoom 305',color:'rgba(0,176,130,.25)',span:'2/3/1/3'},
+    {id:'E3',name:'Quiet\nRoom 301',color:'rgba(0,176,130,.25)',span:'2/3/3/5'},
+    {id:'F3',name:'AV\nEquipment',color:'rgba(237,219,0,.25)',span:'2/3/5/6'},
+    {id:'G3',name:'Terrace\nAccess',color:'rgba(255,133,0,.35)',span:'3/4/1/3'},
+    {id:'H3',name:'Event\nSpace',color:'rgba(43,38,120,.35)',span:'3/4/3/6'},
+  ]
+};
+
+function renderFloor(n) {
+  var map = document.getElementById('floor-map');
+  map.innerHTML = '';
+  (floors[n] || []).forEach(function(z) {
+    var d = document.createElement('div');
+    d.className = 'map-zone';
+    d.id = 'zone-' + z.id;
+    d.style.cssText = 'grid-area:' + z.span + ';background:' + z.color + ';border:1px solid rgba(255,255,255,.1)';
+    d.innerHTML = z.name;
+    map.appendChild(d);
+  });
+}
+renderFloor(1);
+
+function switchFloor(n, el) {
+  document.querySelectorAll('#s-map .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderFloor(n);
+}
+
+function highlightZone(id) {
+  // Switch to floor 2 and highlight
+  switchFloor(2, document.querySelectorAll('#s-map .tab')[1]);
+  setTimeout(function() {
+    var zone = document.getElementById('zone-' + id);
+    if (zone) { zone.classList.add('highlight'); zone.style.background = 'rgba(242,0,130,.45)'; zone.style.borderColor = 'var(--mag)'; }
+  }, 300);
+}
+
+// ===== COMMUNITY BOARD =====
+var commData = {
+  events: [
+    {icon:'🎨',title:'Artist Talk: Material Futures',desc:'Guest lecture by Neri Oxman on computational design and bio-fabrication.',meta:'Apr 8 • 6:00 PM • Room 305',tag:'tag-mag'},
+    {icon:'📚',title:'Research Methods Workshop',desc:'Learn advanced catalog search, interlibrary loan, and citation tools.',meta:'Apr 10 • 2:00 PM • Library Main',tag:'tag-grn'},
+    {icon:'🎬',title:'Film Screening: Objectified',desc:'Documentary about industrial design. Discussion to follow.',meta:'Apr 12 • 7:00 PM • Media Room',tag:'tag-yel'},
+    {icon:'🖨️',title:'Risograph Print Workshop',desc:'Hands-on session with the library\'s risograph printer.',meta:'Apr 14 • 1:00 PM • Print Lab',tag:'tag-org'},
+  ],
+  exchange: [
+    {icon:'📖',title:'Pantone Color Bridge — Swap',desc:'2024 edition, barely used. Looking for typography books.',meta:'Posted by @lyonliu • 2 days ago',tag:'tag-blu'},
+    {icon:'🎨',title:'Winsor & Newton Watercolors',desc:'Half set remaining. Free to a good home.',meta:'Posted by @jtemel • 1 day ago',tag:'tag-grn'},
+    {icon:'📐',title:'Rotring 600 Mechanical Pencil',desc:'0.5mm, silver. Trade for illustration markers.',meta:'Posted by @aliciali • 5 hrs ago',tag:'tag-mag'},
+  ],
+  groups: [
+    {icon:'✏️',title:'Life Drawing Collective',desc:'Weekly sessions, all skill levels. Models provided.',meta:'Thursdays 5-7 PM • 12 members',tag:'tag-mag'},
+    {icon:'💻',title:'Creative Coding Club',desc:'p5.js, TouchDesigner, Arduino. Show & tell format.',meta:'Mondays 6 PM • 8 members',tag:'tag-blu'},
+    {icon:'📸',title:'Darkroom Users Group',desc:'Shared scheduling and technique sharing for film photographers.',meta:'Flexible • 6 members',tag:'tag-yel'},
+  ],
+  lost: [
+    {icon:'🎧',title:'AirPods Pro (Black Case)',desc:'Found near 2nd floor study area on Apr 3.',meta:'Contact circulation desk',tag:'tag-org'},
+    {icon:'📓',title:'Blue Moleskine Sketchbook',desc:'Found in Room 305 after film screening.',meta:'Has name inside — ask at desk',tag:'tag-blu'},
+    {icon:'🧣',title:'Beige Knit Scarf',desc:'Left on chair near main entrance.',meta:'Held at lost & found bin',tag:'tag-grn'},
+  ]
+};
+
+function switchCommTab(tab, el) {
+  document.querySelectorAll('#comm-tabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderComm(tab);
+}
+
+function renderComm(tab) {
+  var container = document.getElementById('comm-content');
+  container.innerHTML = '';
+  (commData[tab] || []).forEach(function(item) {
+    container.innerHTML += '<div class="card" style="display:flex;gap:12px;align-items:flex-start"><div style="font-size:24px;flex-shrink:0;margin-top:2px">' + item.icon + '</div><div style="flex:1"><div class="text-sm font-semi">' + item.title + '</div><div class="text-xs text-muted" style="margin-top:3px;line-height:1.4">' + item.desc + '</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><span class="text-xs text-dim">' + item.meta + '</span></div></div></div>';
+  });
+}
+renderComm('events');
+
+// ===== CHAT =====
+var chatResponses = {
+  'how do i find a book?': 'Great question! You can use the Search tab to look up any book by title, author, or subject. Once you find it, tap "Find on Map" to see exactly where it is on the shelf. You can also ask me for a specific title!',
+  'where are study rooms?': 'Study rooms are on the 2nd and 3rd floors. Room 201 (quiet, 4 seats) and 202 (seminar, 12 seats) are on Floor 2. Room 301 (quiet) and 305 (group, 8 seats) are on Floor 3. Want me to show you availability?',
+  'talk to a librarian': 'I\'ll connect you with a librarian! During library hours, you can speak with someone at the circulation desk on the 1st floor. For online help, email library@ecuad.ca or use the live chat on the ECUAD website.'
+};
+
+function sendChat() {
+  var input = document.getElementById('chat-input');
+  var msg = input.value.trim();
+  if (!msg) return;
+  var container = document.getElementById('chat-messages');
+  container.innerHTML += '<div style="align-self:flex-end;max-width:75%;padding:10px 14px;background:rgba(242,0,130,.15);border:1px solid rgba(242,0,130,.25);border-radius:14px 14px 4px 14px"><div class="text-sm">' + msg + '</div></div>';
+  input.value = '';
+  var reply = chatResponses[msg.toLowerCase()] || 'Thanks for your question! Let me look into that. For immediate help, a librarian is available at the circulation desk on the 1st floor. You can also search our catalog using the Search tab.';
+  setTimeout(function() {
+    container.innerHTML += '<div class="glass" style="padding:10px 14px;align-self:flex-start;max-width:75%;border-radius:14px 14px 14px 4px"><div class="text-sm" style="line-height:1.5">' + reply + '</div><div class="text-xs text-dim" style="margin-top:4px">Library Bot</div></div>';
+    container.scrollTop = container.scrollHeight;
+  }, 600);
+  container.scrollTop = container.scrollHeight;
+}
+
+function quickChat(msg) {
+  document.getElementById('chat-input').value = msg;
+  sendChat();
+}
+
+// ===== TOGGLE =====
+function toggleSwitch(el) { el.classList.toggle('on'); }
+
+// ===== INACTIVITY TIMEOUT =====
+var timeoutId;
+function resetTimeout() {
+  clearTimeout(timeoutId);
+  document.getElementById('timeout-overlay').classList.remove('show');
+  timeoutId = setTimeout(function() {
+    document.getElementById('timeout-overlay').classList.add('show');
+  }, 60000);
+}
+document.getElementById('kiosk').addEventListener('click', resetTimeout);
+document.getElementById('kiosk').addEventListener('touchstart', resetTimeout);
+resetTimeout();
+
+// Init search results
+filterResults();
+</script>
+</body>
+</html>
