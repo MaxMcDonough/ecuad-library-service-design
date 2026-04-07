@@ -115,10 +115,25 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
 /* Inactivity overlay */
 #timeout-overlay{position:absolute;inset:0;background:rgba(12,12,24,.92);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;cursor:pointer}
 #timeout-overlay.show{display:flex}
+
+/* Fullscreen button */
+#fs-btn{position:absolute;top:8px;right:8px;z-index:200;width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;color:var(--txt3);font-size:14px}
+#fs-btn:hover{background:rgba(255,255,255,.2);color:var(--txt)}
+.kiosk.fullscreen{width:100vw!important;height:100vh!important;border-radius:0!important;box-shadow:none!important}
 </style>
 </head>
 <body>
 <div class="kiosk" id="kiosk">
+
+<!-- Fullscreen toggle -->
+<div id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline id="fs-icon-expand" points="4,1 1,1 1,4"/>
+    <polyline points="12,1 15,1 15,4"/>
+    <polyline points="4,15 1,15 1,12"/>
+    <polyline points="12,15 15,15 15,12"/>
+  </svg>
+</div>
 
 <!-- ========== TIMEOUT OVERLAY ========== -->
 <div id="timeout-overlay" onclick="resetTimeout();showScreen('welcome')">
@@ -956,6 +971,27 @@ resetTimeout();
 
 // Init search results
 filterResults();
+
+// ===== FULLSCREEN =====
+function toggleFullscreen() {
+  var kiosk = document.getElementById('kiosk');
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    var el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    kiosk.classList.add('fullscreen');
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    kiosk.classList.remove('fullscreen');
+  }
+}
+document.addEventListener('fullscreenchange', function() {
+  if (!document.fullscreenElement) document.getElementById('kiosk').classList.remove('fullscreen');
+});
+document.addEventListener('webkitfullscreenchange', function() {
+  if (!document.webkitFullscreenElement) document.getElementById('kiosk').classList.remove('fullscreen');
+});
 </script>
 </body>
 </html>
