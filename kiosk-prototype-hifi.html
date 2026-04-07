@@ -583,6 +583,62 @@ html,body{width:100%;height:100%;font-family:'Inter',system-ui,sans-serif;backgr
   </div>
 </div>
 
+<!-- ========== EVENT DETAIL ========== -->
+<div class="screen" id="s-event-detail">
+  <div class="back-header" onclick="goBack('community')">
+    <span class="back-arrow">←</span>
+    <span class="back-title">Event Details</span>
+  </div>
+  <div class="scrollarea" style="display:flex;flex-direction:column">
+    <!-- Hero banner -->
+    <div id="evt-hero" style="height:140px;background:linear-gradient(135deg,rgba(242,0,130,.3),rgba(43,38,120,.5));display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <span id="evt-icon" style="font-size:56px">🎨</span>
+    </div>
+    <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+      <div>
+        <div style="font-size:18px;font-weight:700;line-height:1.3" id="evt-title">Artist Talk: Material Futures</div>
+        <div class="text-sm text-muted mt-8" id="evt-host">Hosted by ECU Library & Industrial Design Dept.</div>
+      </div>
+      <!-- Date/Time/Location -->
+      <div class="glass" style="padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+        <div class="flex items-center gap-8">
+          <span style="font-size:16px;width:24px;text-align:center">📅</span>
+          <div><div class="text-sm font-semi" id="evt-date">Tuesday, April 8, 2026</div></div>
+        </div>
+        <div class="flex items-center gap-8">
+          <span style="font-size:16px;width:24px;text-align:center">🕐</span>
+          <div><div class="text-sm" id="evt-time">6:00 PM – 7:30 PM</div></div>
+        </div>
+        <div class="flex items-center gap-8">
+          <span style="font-size:16px;width:24px;text-align:center">📍</span>
+          <div><div class="text-sm" id="evt-loc">Room 305, 3rd Floor</div></div>
+        </div>
+      </div>
+      <!-- Description -->
+      <div>
+        <div class="section-title">About This Event</div>
+        <div class="text-sm text-muted" style="line-height:1.6" id="evt-desc">Join us for a guest lecture by Neri Oxman exploring the intersection of computational design, digital fabrication, and bio-inspired materials. This talk examines how nature-driven design principles can reshape architecture, product design, and wearable technology. Q&A session to follow.</div>
+      </div>
+      <!-- Tags -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="evt-tags">
+        <span class="tag tag-mag">Design</span>
+        <span class="tag tag-grn">Guest Lecture</span>
+        <span class="tag tag-blu">Free</span>
+      </div>
+      <!-- Actions -->
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="showScreen('success')">RSVP — Save My Spot</button>
+        <button class="btn btn-glass" onclick="showScreen('map');highlightZone('D3')">📍 Map</button>
+      </div>
+      <!-- Capacity -->
+      <div class="glass" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <div class="text-xs text-muted">Capacity</div>
+        <div class="text-xs font-semi" id="evt-cap">18 / 30 spots filled</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ========== PRINT / SCAN ========== -->
 <div class="screen" id="s-print">
   <div class="back-header" onclick="goBack('account')">
@@ -788,10 +844,14 @@ function highlightZone(id) {
 // ===== COMMUNITY BOARD =====
 var commData = {
   events: [
-    {icon:'🎨',title:'Artist Talk: Material Futures',desc:'Guest lecture by Neri Oxman on computational design and bio-fabrication.',meta:'Apr 8 • 6:00 PM • Room 305',tag:'tag-mag'},
-    {icon:'📚',title:'Research Methods Workshop',desc:'Learn advanced catalog search, interlibrary loan, and citation tools.',meta:'Apr 10 • 2:00 PM • Library Main',tag:'tag-grn'},
-    {icon:'🎬',title:'Film Screening: Objectified',desc:'Documentary about industrial design. Discussion to follow.',meta:'Apr 12 • 7:00 PM • Media Room',tag:'tag-yel'},
-    {icon:'🖨️',title:'Risograph Print Workshop',desc:'Hands-on session with the library\'s risograph printer.',meta:'Apr 14 • 1:00 PM • Print Lab',tag:'tag-org'},
+    {icon:'🎨',title:'Artist Talk: Material Futures',desc:'Guest lecture by Neri Oxman on computational design and bio-fabrication.',meta:'Apr 8 • 6:00 PM • Room 305',tag:'tag-mag',
+     detail:{host:'ECU Library & Industrial Design Dept.',date:'Tuesday, April 8, 2026',time:'6:00 PM – 7:30 PM',loc:'Room 305, 3rd Floor',full:'Join us for a guest lecture by Neri Oxman exploring the intersection of computational design, digital fabrication, and bio-inspired materials. This talk examines how nature-driven design principles can reshape architecture, product design, and wearable technology. Q&A session to follow.',tags:['Design','Guest Lecture','Free'],cap:'18 / 30 spots filled',grad:'linear-gradient(135deg,rgba(242,0,130,.3),rgba(43,38,120,.5))'}},
+    {icon:'📚',title:'Research Methods Workshop',desc:'Learn advanced catalog search, interlibrary loan, and citation tools.',meta:'Apr 10 • 2:00 PM • Library Main',tag:'tag-grn',
+     detail:{host:'ECU Library Research Services',date:'Thursday, April 10, 2026',time:'2:00 PM – 3:30 PM',loc:'Library Main Floor',full:'A hands-on workshop covering advanced catalog search techniques, interlibrary loan requests, citation management with Zotero, and accessing digital archives. Bring your laptop. Perfect for thesis students and anyone starting a research project.',tags:['Workshop','Research','Free'],cap:'8 / 20 spots filled',grad:'linear-gradient(135deg,rgba(0,176,130,.3),rgba(43,38,120,.5))'}},
+    {icon:'🎬',title:'Film Screening: Objectified',desc:'Documentary about industrial design. Discussion to follow.',meta:'Apr 12 • 7:00 PM • Media Room',tag:'tag-yel',
+     detail:{host:'Film & Media Studies Club',date:'Saturday, April 12, 2026',time:'7:00 PM – 9:00 PM',loc:'Media Room, 3rd Floor',full:'Screening of Gary Hustwit\'s documentary exploring our complex relationship with manufactured objects and the designers who create them. Featuring interviews with Dieter Rams, Jony Ive, and Naoto Fukasawa. Group discussion afterward.',tags:['Film','Design','Free'],cap:'22 / 40 spots filled',grad:'linear-gradient(135deg,rgba(237,219,0,.3),rgba(43,38,120,.5))'}},
+    {icon:'🖨️',title:'Risograph Print Workshop',desc:'Hands-on session with the library\'s risograph printer.',meta:'Apr 14 • 1:00 PM • Print Lab',tag:'tag-org',
+     detail:{host:'ECU Print Lab & Library',date:'Monday, April 14, 2026',time:'1:00 PM – 4:00 PM',loc:'Print Lab, 1st Floor',full:'Learn to use the library\'s Risograph printer! This session covers color separation, registration, paper selection, and edition printing. You\'ll walk away with your own printed zine. Materials fee: $5 (charged to student account).',tags:['Workshop','Print','$5 Fee'],cap:'6 / 12 spots filled',grad:'linear-gradient(135deg,rgba(255,133,0,.3),rgba(43,38,120,.5))'}},
   ],
   exchange: [
     {icon:'📖',title:'Pantone Color Bridge — Swap',desc:'2024 edition, barely used. Looking for typography books.',meta:'Posted by @lyonliu • 2 days ago',tag:'tag-blu'},
@@ -819,9 +879,35 @@ function switchCommTab(tab, el) {
 function renderComm(tab) {
   var container = document.getElementById('comm-content');
   container.innerHTML = '';
-  (commData[tab] || []).forEach(function(item) {
-    container.innerHTML += '<div class="card" style="display:flex;gap:12px;align-items:flex-start"><div style="font-size:24px;flex-shrink:0;margin-top:2px">' + item.icon + '</div><div style="flex:1"><div class="text-sm font-semi">' + item.title + '</div><div class="text-xs text-muted" style="margin-top:3px;line-height:1.4">' + item.desc + '</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><span class="text-xs text-dim">' + item.meta + '</span></div></div></div>';
+  (commData[tab] || []).forEach(function(item, idx) {
+    var div = document.createElement('div');
+    div.className = 'card';
+    div.style.cssText = 'display:flex;gap:12px;align-items:flex-start';
+    div.innerHTML = '<div style="font-size:24px;flex-shrink:0;margin-top:2px">' + item.icon + '</div><div style="flex:1"><div class="text-sm font-semi">' + item.title + '</div><div class="text-xs text-muted" style="margin-top:3px;line-height:1.4">' + item.desc + '</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><span class="text-xs text-dim">' + item.meta + '</span></div></div>';
+    if (item.detail) {
+      div.onclick = function() { openEventDetail(item); };
+    }
+    container.appendChild(div);
   });
+}
+
+function openEventDetail(item) {
+  document.getElementById('evt-icon').textContent = item.icon;
+  document.getElementById('evt-title').textContent = item.title;
+  document.getElementById('evt-host').textContent = 'Hosted by ' + item.detail.host;
+  document.getElementById('evt-date').textContent = item.detail.date;
+  document.getElementById('evt-time').textContent = item.detail.time;
+  document.getElementById('evt-loc').textContent = item.detail.loc;
+  document.getElementById('evt-desc').textContent = item.detail.full;
+  document.getElementById('evt-cap').textContent = item.detail.cap;
+  document.getElementById('evt-hero').style.background = item.detail.grad;
+  var tagsEl = document.getElementById('evt-tags');
+  tagsEl.innerHTML = '';
+  var tagColors = ['tag-mag','tag-grn','tag-blu','tag-yel','tag-org'];
+  item.detail.tags.forEach(function(t, i) {
+    tagsEl.innerHTML += '<span class="tag ' + tagColors[i % tagColors.length] + '">' + t + '</span>';
+  });
+  showScreen('event-detail');
 }
 renderComm('events');
 
